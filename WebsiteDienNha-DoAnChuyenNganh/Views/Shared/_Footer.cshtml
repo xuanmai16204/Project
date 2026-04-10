@@ -1,0 +1,285 @@
+<footer class="footer-main mt-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-lg-4 mb-3 mb-md-0">
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="text-decoration-none">
+                    <div class="footer-brand mb-3">
+                        <div class="footer-brand-icon-wrapper">
+                            <span class="footer-brand-icon">⚡</span>
+                        </div>
+                        <h5 class="fw-bold mb-2 text-white">Điện Nhà</h5>
+                    </div>
+                </a>
+                <p class="footer-text mb-3">Chuyên cung cấp thiết bị điện gia dụng, thiết bị điện chung cư chất lượng cao với giá cả hợp lý.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link" title="Facebook">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="#" class="social-link" title="Zalo">
+                        <i class="bi bi-chat-dots"></i>
+                    </a>
+                    <a href="#" class="social-link" title="Email">
+                        <i class="bi bi-envelope"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 mb-3 mb-md-0">
+                <h5 class="footer-title mb-3">Liên hệ</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="footer-contact-item mb-3">
+                        <div class="contact-icon-wrapper">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div class="contact-info">
+                            <span class="contact-label">Hotline</span>
+                            <a href="tel:19001234" class="contact-value">1900 1234</a>
+                        </div>
+                    </li>
+                    <li class="footer-contact-item mb-3">
+                        <div class="contact-icon-wrapper">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div class="contact-info">
+                            <span class="contact-label">Email</span>
+                            <a href="mailto:support@diennha.local" class="contact-value">support@diennha.local</a>
+                        </div>
+                    </li>
+                    <li class="footer-contact-item mb-3">
+                        <div class="contact-icon-wrapper">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div class="contact-info">
+                            <span class="contact-label">Địa chỉ</span>
+                            <span class="contact-value">123 Đường ABC, Quận XYZ, TP.HCM</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <h5 class="footer-title mb-3">Liên kết</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <a href="#" class="footer-link">
+                            <i class="bi bi-chevron-right me-2"></i>Về chúng tôi
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="footer-link">
+                            <i class="bi bi-chevron-right me-2"></i>Chính sách bảo hành
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="footer-link">
+                            <i class="bi bi-chevron-right me-2"></i>Hướng dẫn mua hàng
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a asp-area="" asp-controller="Home" asp-action="Privacy" class="footer-link">
+                            <i class="bi bi-chevron-right me-2"></i>Chính sách bảo mật
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-divider"></div>
+        <div class="row">
+            <div class="col-12 text-center">
+                <p class="footer-copyright mb-0">
+                    <i class="bi bi-c-circle me-1"></i>2025 WebsiteDienNha_DoAnChuyenNganh. Tất cả quyền được bảo lưu.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    .footer-main {
+        background: linear-gradient(135deg, #212529 0%, #1a1d20 100%);
+        color: #fff;
+        padding: 3rem 0 1.5rem;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .footer-brand-icon-wrapper {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+    }
+    
+    .footer-brand-icon {
+        font-size: 1.75rem;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .footer-title {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .footer-text {
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+    
+    .footer-social {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .social-link {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+    }
+    
+    .social-link:hover {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+        color: #fff;
+    }
+    
+    .footer-contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .contact-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        background: rgba(13, 110, 253, 0.2);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: #0d6efd;
+        font-size: 1.1rem;
+    }
+    
+    .contact-info {
+        flex-grow: 1;
+    }
+    
+    .contact-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .contact-value {
+        display: block;
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .contact-value:hover {
+        color: #0d6efd;
+    }
+    
+    .footer-link {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .footer-link:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
+        padding-left: 0.75rem;
+    }
+    
+    .footer-divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        margin: 2rem 0 1.5rem;
+    }
+    
+    .footer-copyright {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 991.98px) {
+        .footer-main {
+            padding: 2.5rem 0 1.5rem;
+        }
+        
+        .footer-brand {
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-title {
+            margin-top: 1.5rem;
+        }
+    }
+    
+    @@media (max-width: 767.98px) {
+        .footer-main {
+            padding: 2rem 0 1rem;
+        }
+        
+        .footer-brand-icon-wrapper {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .footer-brand-icon {
+            font-size: 1.5rem;
+        }
+        
+        .footer-contact-item {
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .contact-icon-wrapper {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+        
+        .social-link {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+    }
+</style>
+

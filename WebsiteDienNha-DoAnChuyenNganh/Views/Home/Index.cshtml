@@ -1,0 +1,644 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+    var categories = ViewBag.Categories as List<WebsiteDienNha_DoAnChuyenNganh.Models.Category> ?? new List<WebsiteDienNha_DoAnChuyenNganh.Models.Category>();
+    var featuredProducts = ViewBag.FeaturedProducts as List<WebsiteDienNha_DoAnChuyenNganh.Models.Product> ?? new List<WebsiteDienNha_DoAnChuyenNganh.Models.Product>();
+    var bestSellingProducts = ViewBag.BestSellingProducts as List<WebsiteDienNha_DoAnChuyenNganh.Models.Product> ?? new List<WebsiteDienNha_DoAnChuyenNganh.Models.Product>();
+}
+
+<!-- Hero Banner Section -->
+<section class="hero-banner">
+    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="hero-slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="container">
+                        <div class="row align-items-center min-vh-50">
+                            <div class="col-lg-6">
+                                <div class="hero-content">
+                                    <h1 class="hero-title">Thiết bị điện chính hãng</h1>
+                                    <p class="hero-subtitle">Chất lượng cao, giá cả hợp lý, giao hàng nhanh chóng</p>
+                                    <a asp-controller="Product" asp-action="Index" class="btn btn-hero">
+                                        <i class="bi bi-arrow-right me-2"></i>Mua ngay
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 text-center">
+                                <div class="hero-image">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="hero-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="container">
+                        <div class="row align-items-center min-vh-50">
+                            <div class="col-lg-6">
+                                <div class="hero-content">
+                                    <h1 class="hero-title">Giảm giá lên đến 30%</h1>
+                                    <p class="hero-subtitle">Khuyến mãi đặc biệt cho khách hàng mới</p>
+                                    <a asp-controller="Product" asp-action="Index" class="btn btn-hero">
+                                        <i class="bi bi-tag me-2"></i>Xem khuyến mãi
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 text-center">
+                                <div class="hero-image">
+                                    <i class="bi bi-gift-fill"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</section>
+
+<!-- Categories Section -->
+@if (categories.Any())
+{
+    <section class="categories-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Danh mục sản phẩm</h2>
+                <p class="section-subtitle">Khám phá các danh mục sản phẩm phong phú</p>
+            </div>
+            <div class="row g-4">
+                @foreach (var category in categories.Take(8))
+                {
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <a asp-controller="Product" asp-action="Index" asp-route-categoryId="@category.Id" class="category-card">
+                            <div class="category-icon">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                            </div>
+                            <h5 class="category-name">@category.Name</h5>
+                            <span class="category-link">Xem sản phẩm <i class="bi bi-arrow-right"></i></span>
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="text-center mt-4">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-right-circle me-2"></i>Xem tất cả danh mục
+                </a>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Featured Products Section -->
+@if (featuredProducts.Any())
+{
+    <section class="products-section py-5 bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Sản phẩm nổi bật</h2>
+                <p class="section-subtitle">Những sản phẩm được yêu thích nhất</p>
+            </div>
+            <div class="row g-4">
+                @foreach (var product in featuredProducts.Take(8))
+                {
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="product-card">
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="product-image-wrapper">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+                                }
+                                else
+                                {
+                                    <div class="product-image-placeholder">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                <div class="product-overlay">
+                                    <span class="btn btn-sm btn-primary">Xem chi tiết</span>
+                                </div>
+                            </a>
+                            <div class="product-info">
+                                <h6 class="product-name">
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">@product.Name</a>
+                                </h6>
+                                @{
+                                    var promotionPrice = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.GetPromotionPrice(product);
+                                    var hasPromotion = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.HasActivePromotion(product);
+                                    var discountPercent = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.GetDiscountPercent(product);
+                                }
+                                <div class="product-price">
+                                    @if (hasPromotion && promotionPrice < product.Price)
+                                    {
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="promotion-price text-danger fw-bold">@promotionPrice.ToString("N0") đ</span>
+                                            <span class="original-price text-muted text-decoration-line-through">@product.Price.ToString("N0") đ</span>
+                                            <span class="discount-badge badge bg-danger">-@discountPercent%</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span>@product.Price.ToString("N0") đ</span>
+                                    }
+                                </div>
+                                <div class="product-actions">
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <form asp-area="Customer" asp-controller="ShoppingCart" asp-action="Add" method="post" class="d-inline w-100">
+                                            <input type="hidden" name="productId" value="@product.Id">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                                                <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-primary w-100">
+                                            <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập để mua
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="text-center mt-4">
+                <a asp-controller="Product" asp-action="Index" class="btn btn-primary">
+                    <i class="bi bi-arrow-right-circle me-2"></i>Xem tất cả sản phẩm
+                </a>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Best Selling Products Section -->
+@if (bestSellingProducts.Any())
+{
+    <section class="products-section py-5">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="section-title">Sản phẩm bán chạy</h2>
+                <p class="section-subtitle">Được khách hàng tin dùng nhất</p>
+            </div>
+            <div class="row g-4">
+                @foreach (var product in bestSellingProducts.Take(8))
+                {
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="product-card">
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="product-image-wrapper">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+                                }
+                                else
+                                {
+                                    <div class="product-image-placeholder">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                }
+                                <div class="product-badge">Bán chạy</div>
+                                <div class="product-overlay">
+                                    <span class="btn btn-sm btn-primary">Xem chi tiết</span>
+                                </div>
+                            </a>
+                            <div class="product-info">
+                                <h6 class="product-name">
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">@product.Name</a>
+                                </h6>
+                                @{
+                                    var bestPromotionPrice = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.GetPromotionPrice(product);
+                                    var bestHasPromotion = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.HasActivePromotion(product);
+                                    var bestDiscountPercent = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.GetDiscountPercent(product);
+                                }
+                                <div class="product-price">
+                                    @if (bestHasPromotion && bestPromotionPrice < product.Price)
+                                    {
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="promotion-price text-danger fw-bold">@bestPromotionPrice.ToString("N0") đ</span>
+                                            <span class="original-price text-muted text-decoration-line-through">@product.Price.ToString("N0") đ</span>
+                                            <span class="discount-badge badge bg-danger">-@bestDiscountPercent%</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span>@product.Price.ToString("N0") đ</span>
+                                    }
+                                </div>
+                                <div class="product-actions">
+                                    @if (User.Identity?.IsAuthenticated == true)
+                                    {
+                                        <form asp-area="Customer" asp-controller="ShoppingCart" asp-action="Add" method="post" class="d-inline w-100">
+                                            <input type="hidden" name="productId" value="@product.Id">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                                                <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-primary w-100">
+                                            <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập để mua
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Features Section -->
+<section class="features-section py-5 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <div class="feature-item text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <h6 class="feature-title">Giao hàng nhanh</h6>
+                    <p class="feature-text">Miễn phí vận chuyển</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h6 class="feature-title">Bảo hành chính hãng</h6>
+                    <p class="feature-text">12-24 tháng</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <h6 class="feature-title">Đổi trả dễ dàng</h6>
+                    <p class="feature-text">Trong 7 ngày</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <h6 class="feature-title">Hỗ trợ 24/7</h6>
+                    <p class="feature-text">Tư vấn miễn phí</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Banner */
+    .hero-banner {
+        margin-top: -1rem;
+        margin-bottom: 3rem;
+    }
+
+    .hero-slide {
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+        color: white;
+		position: relative;
+		overflow: hidden;
+	}
+
+    .hero-slide::before {
+		content: '';
+		position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+    }
+
+    .hero-content {
+		position: relative;
+		z-index: 1;
+	}
+
+	.hero-title {
+        font-size: 3.5rem;
+		font-weight: 800;
+		margin-bottom: 1.5rem;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+	}
+
+	.hero-subtitle {
+        font-size: 1.25rem;
+		margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+
+    .btn-hero {
+        background: white;
+        color: #667eea;
+        padding: 1rem 2.5rem;
+		font-weight: 600;
+		border-radius: 50px;
+		border: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+		transition: all 0.3s ease;
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        color: #667eea;
+    }
+
+    .hero-image {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-image i {
+        font-size: 15rem;
+        opacity: 0.2;
+		color: white;
+	}
+
+    /* Categories */
+    .categories-section {
+        background: white;
+    }
+
+    .category-card {
+        display: block;
+		background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 1rem;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: #212529;
+        transition: all 0.3s ease;
+		height: 100%;
+    }
+
+    .category-card:hover {
+        border-color: #667eea;
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+        color: #212529;
+    }
+
+    .category-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+        color: white;
+        font-size: 2rem;
+        transition: all 0.3s ease;
+	}
+
+    .category-card:hover .category-icon {
+		transform: scale(1.15) rotate(5deg);
+    }
+
+    .category-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-link {
+        font-size: 0.875rem;
+        color: #667eea;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Products */
+    .products-section {
+        background: white;
+    }
+
+    .product-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        border-color: #667eea;
+    }
+
+    .product-image-wrapper {
+		position: relative;
+		overflow: hidden;
+        background: #f8f9fa;
+        height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image {
+		width: 100%;
+		height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.1);
+    }
+
+    .product-image-placeholder {
+        font-size: 4rem;
+        color: #adb5bd;
+    }
+
+    .product-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(102, 126, 234, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover .product-overlay {
+        opacity: 1;
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc3545;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .product-info {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        flex: 1;
+    }
+
+    .product-name a {
+        color: #212529;
+        text-decoration: none;
+    }
+
+    .product-name a:hover {
+        color: #667eea;
+    }
+
+    .product-price {
+        min-height: 2.5rem;
+    }
+
+    .promotion-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .original-price {
+        font-size: 0.875rem;
+    }
+
+    .discount-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+
+    .product-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+
+    /* Features */
+    .features-section {
+        background: white;
+    }
+
+    .feature-item {
+        padding: 1.5rem;
+    }
+
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+			font-size: 2rem;
+    }
+
+    .feature-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    /* Section Headers */
+    .section-title {
+			font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-subtitle {
+        color: #6c757d;
+			font-size: 1.1rem;
+		}
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-title {
+			font-size: 2.5rem;
+		}
+
+		.hero-subtitle {
+			font-size: 1rem;
+		}
+
+        .hero-image i {
+            font-size: 8rem;
+		}
+
+		.section-title {
+            font-size: 2rem;
+		}
+	}
+</style>

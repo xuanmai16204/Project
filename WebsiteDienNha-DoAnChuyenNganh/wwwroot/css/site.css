@@ -1,0 +1,324 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+/* Header responsive improvements */
+.navbar-brand {
+  transition: transform 0.2s ease;
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+.nav-link.transition-hover {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-link.transition-hover:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.dropdown-menu {
+  border-radius: 0.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+}
+
+.dropdown-item:hover {
+  background-color: #0d6efd;
+  color: white;
+  padding-left: 1.5rem;
+}
+
+.navbar-toggler {
+  padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+}
+
+/* Footer responsive improvements */
+footer {
+  position: relative;
+}
+
+.footer-link {
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.footer-link:hover {
+  color: #0d6efd !important;
+  transform: translateX(5px);
+  text-decoration: underline !important;
+}
+
+footer .bi {
+  font-size: 0.875rem;
+}
+
+footer h5 {
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .navbar-nav {
+    margin-top: 1rem;
+  }
+  
+  .nav-link {
+    padding: 0.75rem 1rem !important;
+    margin: 0.25rem 0;
+  }
+  
+  .dropdown-menu {
+    margin-top: 0.5rem;
+    border-radius: 0.5rem;
+  }
+  
+  footer {
+    text-align: center;
+  }
+  
+  footer .col-md-6,
+  footer .col-lg-4 {
+    margin-bottom: 2rem;
+  }
+  
+  footer .d-flex {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .nav-link {
+    padding: 0.5rem 0.75rem !important;
+  }
+}
+
+/* Mobile specific improvements */
+@media (max-width: 575.98px) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+  
+  .navbar-toggler {
+    font-size: 1rem;
+  }
+  
+  footer {
+    padding: 2rem 0 !important;
+  }
+  
+  footer h5 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Account pages responsive improvements */
+.min-vh-50 {
+  min-height: 50vh;
+}
+
+@media (max-width: 767.98px) {
+  .min-vh-50 {
+    min-height: auto;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+  
+  .card-body {
+    padding: 1.5rem !important;
+  }
+  
+  .card-body h2 {
+    font-size: 1.5rem;
+  }
+  
+  .card-body i {
+    font-size: 2.5rem !important;
+  }
+  
+  .form-control-lg {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  .btn-lg {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .card-body {
+    padding: 2rem !important;
+  }
+}
+
+/* Form enhancements */
+.form-control-lg:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 767.98px) {
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* Link styling */
+a.text-decoration-none {
+  transition: color 0.2s ease;
+}
+
+a.text-decoration-none:hover {
+  color: #0d6efd !important;
+  text-decoration: underline !important;
+}
+
+/* Payment method selection styling */
+.hover-shadow {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.form-check-input:checked ~ .form-check-label,
+.form-check-input:checked + .form-check-label {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.form-check-input:checked ~ .form-check-label .border,
+.form-check-input:checked + .form-check-label .border {
+  border-color: #0d6efd !important;
+  border-width: 2px !important;
+}
+
+/* Hover lift effect for cards */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 767.98px) {
+  .hover-lift:hover {
+    transform: none;
+  }
+}
+
+/* Responsive table improvements */
+@media (max-width: 767.98px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+  }
+}
+
+/* Shopping Cart Improvements */
+.cart-item-row {
+  transition: all 0.2s ease;
+}
+
+.cart-item-row:hover {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+  transform: scale(1.01);
+}
+
+@media (max-width: 767.98px) {
+  .cart-item-row:hover {
+    transform: none;
+  }
+  
+  .sticky-top {
+    position: relative !important;
+  }
+}
+
+/* Input group improvements */
+.input-group .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Button improvements */
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.btn-rounded {
+  border-radius: 50px;
+}

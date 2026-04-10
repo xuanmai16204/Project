@@ -1,0 +1,141 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.DiscountCode
+@{
+	ViewData["Title"] = "Tạo mã giảm giá mới";
+}
+
+<div class="container my-4">
+	<div class="row justify-content-center">
+		<div class="col-12 col-lg-10">
+			<div class="card shadow-sm border-0">
+				<div class="card-header bg-primary text-white">
+					<h4 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Tạo mã giảm giá mới</h4>
+				</div>
+				<div class="card-body p-4">
+					<form asp-action="Create" method="post">
+						<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+						
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label asp-for="Code" class="form-label fw-semibold">Mã giảm giá <span class="text-danger">*</span></label>
+								<input asp-for="Code" class="form-control form-control-lg" placeholder="VÍDỤ123" style="text-transform: uppercase;" />
+								<span asp-validation-for="Code" class="text-danger small"></span>
+								<small class="text-muted">Mã sẽ được chuyển thành chữ hoa tự động</small>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label asp-for="IsActive" class="form-label fw-semibold">Trạng thái</label>
+								<div class="form-check form-switch mt-2">
+									<input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+									<label asp-for="IsActive" class="form-check-label">Kích hoạt</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label asp-for="Description" class="form-label fw-semibold">Mô tả</label>
+							<textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả về mã giảm giá"></textarea>
+							<span asp-validation-for="Description" class="text-danger small"></span>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label class="form-label fw-semibold">Loại giảm giá <span class="text-danger">*</span></label>
+								<div class="form-check">
+									<input type="radio" class="form-check-input" name="discountType" id="discountPercent" value="percent" checked onchange="toggleDiscountType()">
+									<label class="form-check-label" for="discountPercent">Phần trăm (%)</label>
+								</div>
+								<div class="form-check">
+									<input type="radio" class="form-check-input" name="discountType" id="discountAmount" value="amount" onchange="toggleDiscountType()">
+									<label class="form-check-label" for="discountAmount">Số tiền cố định (đ)</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6 mb-3" id="percentGroup">
+								<label asp-for="DiscountPercent" class="form-label fw-semibold">Phần trăm giảm giá (%)</label>
+								<input asp-for="DiscountPercent" type="number" step="0.01" min="0" max="100" class="form-control form-control-lg" placeholder="10" />
+								<span asp-validation-for="DiscountPercent" class="text-danger small"></span>
+								<small class="text-muted">Nhập từ 0 đến 100</small>
+							</div>
+							<div class="col-md-6 mb-3" id="amountGroup" style="display: none;">
+								<label asp-for="DiscountAmount" class="form-label fw-semibold">Số tiền giảm giá (đ)</label>
+								<input asp-for="DiscountAmount" type="number" step="1000" min="0" class="form-control form-control-lg" placeholder="50000" />
+								<span asp-validation-for="DiscountAmount" class="text-danger small"></span>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label asp-for="StartDate" class="form-label fw-semibold">Ngày bắt đầu <span class="text-danger">*</span></label>
+								<input asp-for="StartDate" type="datetime-local" class="form-control form-control-lg" />
+								<span asp-validation-for="StartDate" class="text-danger small"></span>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label asp-for="EndDate" class="form-label fw-semibold">Ngày kết thúc <span class="text-danger">*</span></label>
+								<input asp-for="EndDate" type="datetime-local" class="form-control form-control-lg" />
+								<span asp-validation-for="EndDate" class="text-danger small"></span>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label asp-for="UsageLimit" class="form-label fw-semibold">Giới hạn sử dụng</label>
+								<input asp-for="UsageLimit" type="number" min="0" class="form-control form-control-lg" placeholder="0 = không giới hạn" />
+								<span asp-validation-for="UsageLimit" class="text-danger small"></span>
+								<small class="text-muted">Nhập 0 để không giới hạn số lần sử dụng</small>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label asp-for="MinimumOrderAmount" class="form-label fw-semibold">Đơn hàng tối thiểu (đ)</label>
+								<input asp-for="MinimumOrderAmount" type="number" step="1000" min="0" class="form-control form-control-lg" placeholder="100000" />
+								<span asp-validation-for="MinimumOrderAmount" class="text-danger small"></span>
+								<small class="text-muted">Để trống nếu không có yêu cầu tối thiểu</small>
+							</div>
+						</div>
+
+						<div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+							<a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+								<i class="bi bi-arrow-left me-2"></i>Quay lại
+							</a>
+							<button type="submit" class="btn btn-primary btn-lg">
+								<i class="bi bi-save me-2"></i>Lưu
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function toggleDiscountType() {
+		const percentRadio = document.getElementById('discountPercent');
+		const amountRadio = document.getElementById('discountAmount');
+		const percentGroup = document.getElementById('percentGroup');
+		const amountGroup = document.getElementById('amountGroup');
+		const percentInput = document.querySelector('input[name="DiscountPercent"]');
+		const amountInput = document.querySelector('input[name="DiscountAmount"]');
+
+		if (percentRadio.checked) {
+			percentGroup.style.display = 'block';
+			amountGroup.style.display = 'none';
+			percentInput.required = true;
+			amountInput.required = false;
+			amountInput.value = '';
+		} else {
+			percentGroup.style.display = 'none';
+			amountGroup.style.display = 'block';
+			percentInput.required = false;
+			amountInput.required = true;
+			percentInput.value = '';
+		}
+	}
+
+	// Initialize on page load
+	document.addEventListener('DOMContentLoaded', function() {
+		toggleDiscountType();
+	});
+</script>
+
+<partial name="~/Views/Shared/_ValidationScriptsPartial.cshtml" />
+

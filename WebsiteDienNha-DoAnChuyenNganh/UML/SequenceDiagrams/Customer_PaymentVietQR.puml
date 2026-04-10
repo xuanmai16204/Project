@@ -1,0 +1,53 @@
+@startuml Sequence Diagram - Customer Thanh toán VietQR
+
+actor Customer
+participant "PaymentController" as Controller
+participant "OrderRepository" as OrderRepo
+participant "VietQRService" as VietQR
+participant "Database" as DB
+
+Customer -> Controller: GET /Customer/Payment/Confirm?orderId=X
+Controller -> OrderRepo: GetByIdAsync(orderId)
+OrderRepo -> DB: SELECT Order với Items
+DB -> OrderRepo: Order
+OrderRepo -> Controller: Order
+
+alt Order tồn tại
+    alt Order.Status = "Paid"
+        Controller -> Customer: Redirect to OrderCompleted
+    else Order.Status != "Paid"
+        Controller -> VietQR: GenerateQRCodeUrl(amount, addInfo)
+        VietQR -> VietQR: Tạo URL: img.vietqr.io/image/{bank}-{account}-{template}.jpg
+        VietQR -> Controller: QR Code URL
+        
+        Controller -> VietQR: GetBankInfo()
+        VietQR -> Controller: (BankName, AccountNumber, AccountName)
+        
+        Controller -> VietQR: GenerateDeeplink(amount, addInfo, orderId)
+        VietQR -> Controller: Deeplink URL
+        
+        Controller -> Customer: Hiển thị trang Confirm với QR code
+    end
+else Order không tồn tại
+    Controller -> Customer: 404 Not Found
+end
+
+Customer -> Customer: Quét QR code và thanh toán qua app ngân hàng
+
+Customer -> Controller: POST /Customer/Payment/ConfirmPayment (orderId)
+Controller -> OrderRepo: GetByIdAsync(orderId)
+OrderRepo -> DB: SELECT Order
+DB -> OrderRepo: Order
+OrderRepo -> Controller: Order
+
+Controller -> Controller: Update Order.Status = "Paid"
+Controller -> OrderRepo: UpdateAsync(order)
+OrderRepo -> DB: UPDATE Order SET Status = "Paid"
+DB -> OrderRepo: Updated
+OrderRepo -> Controller: Success
+
+Controller -> Customer: JSON {success: true, redirectUrl: ...}
+Customer -> Customer: Redirect to OrderCompleted
+
+@enduml
+

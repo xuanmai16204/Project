@@ -1,0 +1,21 @@
+@startuml Sequence Diagram - Employee Xem Dashboard
+
+actor Employee
+participant "DashboardController" as Controller
+participant "ApplicationDbContext" as DbContext
+participant "Database" as DB
+
+Employee -> Controller: GET /Employee/Dashboard/Index
+Controller -> DbContext: EmployeePerformances.Where(EmployeeId == currentUserId)
+DbContext -> DB: SELECT * FROM EmployeePerformances WHERE EmployeeId = currentUserId
+DB -> DbContext: Performance data
+DbContext -> Controller: Performance data
+
+Controller -> Controller: Tính toán các chỉ số hiệu suất
+Controller -> Controller: Lấy dữ liệu đơn hàng đã xử lý
+Controller -> Controller: Lấy dữ liệu doanh thu đóng góp
+
+Controller -> Employee: Hiển thị Dashboard với thông tin hiệu suất
+
+@enduml
+

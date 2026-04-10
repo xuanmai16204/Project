@@ -1,0 +1,187 @@
+@{
+	ViewData["Title"] = "Dashboard";
+}
+
+<div class="row g-4 mb-4">
+	<!-- Thống kê tổng quan -->
+	<div class="col-12 col-sm-6 col-lg-3">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="text-muted mb-1 small">Tổng đơn hàng</p>
+						<h3 class="mb-0 fw-bold">@ViewBag.TotalOrders</h3>
+					</div>
+					<div class="bg-primary bg-opacity-10 rounded-circle p-3">
+						<i class="bi bi-cart-check text-primary fs-4"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 col-sm-6 col-lg-3">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="text-muted mb-1 small">Tổng doanh thu</p>
+						<h3 class="mb-0 fw-bold text-success">@(((decimal)ViewBag.TotalRevenue).ToString("N0")) đ</h3>
+					</div>
+					<div class="bg-success bg-opacity-10 rounded-circle p-3">
+						<i class="bi bi-currency-dollar text-success fs-4"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 col-sm-6 col-lg-3">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="text-muted mb-1 small">Tổng sản phẩm</p>
+						<h3 class="mb-0 fw-bold">@ViewBag.TotalProducts</h3>
+					</div>
+					<div class="bg-info bg-opacity-10 rounded-circle p-3">
+						<i class="bi bi-box-seam text-info fs-4"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 col-sm-6 col-lg-3">
+		<div class="card shadow-sm border-0 h-100">
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center">
+					<div>
+						<p class="text-muted mb-1 small">Tổng khách hàng</p>
+						<h3 class="mb-0 fw-bold">@ViewBag.TotalCustomers</h3>
+					</div>
+					<div class="bg-warning bg-opacity-10 rounded-circle p-3">
+						<i class="bi bi-people text-warning fs-4"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row g-4 mb-4">
+	<!-- Thống kê hôm nay -->
+	<div class="col-12 col-md-6">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-primary text-white">
+				<h5 class="mb-0"><i class="bi bi-calendar-day me-2"></i>Hôm nay</h5>
+			</div>
+			<div class="card-body">
+				<div class="row text-center">
+					<div class="col-6">
+						<p class="text-muted mb-1">Đơn hàng</p>
+						<h4 class="fw-bold text-primary">@ViewBag.TodayOrders</h4>
+					</div>
+					<div class="col-6">
+						<p class="text-muted mb-1">Doanh thu</p>
+						<h4 class="fw-bold text-success">@(((decimal)ViewBag.TodayRevenue).ToString("N0")) đ</h4>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Thống kê tháng này -->
+	<div class="col-12 col-md-6">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-info text-white">
+				<h5 class="mb-0"><i class="bi bi-calendar-month me-2"></i>Tháng này</h5>
+			</div>
+			<div class="card-body">
+				<div class="row text-center">
+					<div class="col-6">
+						<p class="text-muted mb-1">Đơn hàng</p>
+						<h4 class="fw-bold text-primary">@ViewBag.MonthOrders</h4>
+					</div>
+					<div class="col-6">
+						<p class="text-muted mb-1">Doanh thu</p>
+						<h4 class="fw-bold text-success">@(((decimal)ViewBag.MonthRevenue).ToString("N0")) đ</h4>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row g-4">
+	<!-- Trạng thái đơn hàng -->
+	<div class="col-12 col-lg-4">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-light">
+				<h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Trạng thái đơn hàng</h5>
+			</div>
+			<div class="card-body">
+				<div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+					<span><i class="bi bi-clock-history text-warning me-2"></i>Chờ xử lý</span>
+					<span class="badge bg-warning fs-6">@ViewBag.PendingOrders</span>
+				</div>
+				<div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+					<span><i class="bi bi-check-circle text-info me-2"></i>Đã xác nhận</span>
+					<span class="badge bg-info fs-6">@ViewBag.ConfirmedOrders</span>
+				</div>
+				<div class="d-flex justify-content-between align-items-center">
+					<span><i class="bi bi-check-circle-fill text-success me-2"></i>Đã thanh toán</span>
+					<span class="badge bg-success fs-6">@ViewBag.PaidOrders</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Đơn hàng gần đây -->
+	<div class="col-12 col-lg-8">
+		<div class="card shadow-sm border-0">
+			<div class="card-header bg-light d-flex justify-content-between align-items-center">
+				<h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Đơn hàng gần đây</h5>
+				<a asp-controller="Order" asp-action="Index" class="btn btn-sm btn-primary">Xem tất cả</a>
+			</div>
+			<div class="card-body p-0">
+				<div class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<thead class="table-light">
+							<tr>
+								<th>Mã đơn</th>
+								<th>Khách hàng</th>
+								<th>Ngày đặt</th>
+								<th>Tổng tiền</th>
+								<th>Trạng thái</th>
+								<th class="text-center">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var order in (List<WebsiteDienNha_DoAnChuyenNganh.Models.Order>)ViewBag.RecentOrders)
+							{
+								<tr>
+									<td><strong class="text-primary">#@order.Id</strong></td>
+									<td>@(order.User?.Email ?? "N/A")</td>
+									<td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+									<td><strong>@order.Total.ToString("N0") đ</strong></td>
+									<td>
+										<span class="badge @(order.Status == "Paid" || order.Status == "Confirmed" ? "bg-success" : order.Status == "Failed" ? "bg-danger" : "bg-warning")">
+											@order.Status
+										</span>
+									</td>
+									<td class="text-center">
+										<a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+											<i class="bi bi-eye"></i>
+										</a>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

@@ -1,0 +1,341 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.Order
+@{
+	ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<style>
+	.order-details-page {
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		min-height: calc(100vh - 200px);
+		padding: 2rem 0;
+	}
+
+	.order-details-card {
+		border-radius: 1.25rem;
+		overflow: hidden;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+		border: none;
+		transition: all 0.3s ease;
+	}
+
+	.order-details-card:hover {
+		box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+	}
+
+	.order-details-card .card-header {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border: none;
+		padding: 1.5rem;
+	}
+
+	.order-details-card .card-header h4 {
+		font-size: 1.5rem;
+		letter-spacing: 0.5px;
+	}
+
+	.info-box {
+		background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+		border: 2px solid rgba(102, 126, 234, 0.1);
+		border-radius: 1rem;
+		padding: 1.25rem;
+		transition: all 0.3s ease;
+		height: 100%;
+	}
+
+	.info-box:hover {
+		border-color: rgba(102, 126, 234, 0.3);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+	}
+
+	.info-box strong {
+		color: #667eea;
+		font-size: 0.9rem;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		margin-bottom: 0.5rem;
+		display: block;
+	}
+
+	.info-box p {
+		color: #212529;
+		font-size: 1rem;
+		font-weight: 500;
+		margin: 0;
+	}
+
+	.status-badge-detail {
+		padding: 0.75rem 1.5rem;
+		border-radius: 0.75rem;
+		font-size: 1rem;
+		font-weight: 600;
+		display: inline-block;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	}
+
+	.products-section {
+		margin-top: 2rem;
+	}
+
+	.products-section h5 {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		font-size: 1.5rem;
+		font-weight: 700;
+		margin-bottom: 1.5rem;
+	}
+
+	.order-table {
+		border-radius: 1rem;
+		overflow: hidden;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+	}
+
+	.order-table thead {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+	}
+
+	.order-table thead th {
+		border: none;
+		padding: 1rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		font-size: 0.9rem;
+	}
+
+	.order-table tbody td {
+		padding: 1.25rem 1rem;
+		vertical-align: middle;
+		border-bottom: 1px solid rgba(0,0,0,0.05);
+	}
+
+	.order-table tbody tr:hover {
+		background: rgba(102, 126, 234, 0.03);
+	}
+
+	.order-table tbody tr:last-child td {
+		border-bottom: none;
+	}
+
+	.order-table tfoot {
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		border-top: 3px solid #667eea;
+	}
+
+	.order-table tfoot th {
+		padding: 1.5rem 1rem;
+		font-weight: 700;
+	}
+
+	.total-amount {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		font-size: 2rem;
+	}
+
+	.back-btn {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border: none;
+		color: white;
+		padding: 0.875rem 2rem;
+		border-radius: 0.75rem;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+	}
+
+	.back-btn:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+		background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+		color: white;
+	}
+
+	.back-btn:active {
+		transform: translateY(-1px);
+	}
+
+	/* Responsive */
+	@@media (max-width: 991.98px) {
+		.order-details-page {
+			padding: 1.5rem 0;
+		}
+
+		.order-details-card .card-header h4 {
+			font-size: 1.25rem;
+		}
+
+		.info-box {
+			margin-bottom: 1rem;
+		}
+	}
+
+	@@media (max-width: 767.98px) {
+		.order-details-page {
+			padding: 1rem 0;
+		}
+
+		.order-details-card .card-body {
+			padding: 1.5rem !important;
+		}
+
+		.info-box {
+			padding: 1rem;
+		}
+
+		.order-table thead th {
+			font-size: 0.8rem;
+			padding: 0.875rem 0.75rem;
+		}
+
+		.order-table tbody td {
+			padding: 1rem 0.75rem;
+			font-size: 0.9rem;
+		}
+
+		.total-amount {
+			font-size: 1.5rem;
+		}
+
+		.products-section h5 {
+			font-size: 1.25rem;
+		}
+	}
+
+	@@media (max-width: 575.98px) {
+		.order-details-card .card-header {
+			padding: 1rem;
+		}
+
+		.order-details-card .card-header h4 {
+			font-size: 1.1rem;
+		}
+
+		.info-box strong {
+			font-size: 0.8rem;
+		}
+
+		.info-box p {
+			font-size: 0.9rem;
+		}
+
+		.status-badge-detail {
+			font-size: 0.875rem;
+			padding: 0.625rem 1.25rem;
+		}
+
+		.order-table {
+			font-size: 0.85rem;
+		}
+
+		.back-btn {
+			width: 100%;
+			padding: 0.75rem 1.5rem;
+		}
+	}
+</style>
+
+<div class="order-details-page">
+	<div class="container">
+		<div class="row">
+			<div class="col-12">
+				<div class="card shadow-lg border-0 order-details-card">
+					<div class="card-header bg-primary text-white py-3">
+						<h4 class="mb-0 fw-bold"><i class="bi bi-receipt me-2"></i>Đơn hàng #@Model.Id</h4>
+					</div>
+					<div class="card-body p-4">
+						<div class="row g-4 mb-4">
+							<div class="col-12 col-md-6">
+								<div class="info-box">
+									<strong><i class="bi bi-calendar me-2"></i>Ngày đặt:</strong>
+									<p>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+								</div>
+							</div>
+							<div class="col-12 col-md-6">
+								<div class="info-box">
+									<strong><i class="bi bi-info-circle me-2"></i>Trạng thái:</strong>
+									<p>
+										@{
+											var statusClass = Model.Status == "Paid" || Model.Status == "Confirmed" || Model.Status == "Delivered"
+												? "bg-success" 
+												: Model.Status == "Failed" || Model.Status == "Cancelled" 
+												? "bg-danger" 
+												: "bg-warning";
+											var statusText = Model.Status == "Paid" ? "Đã thanh toán" 
+												: Model.Status == "Confirmed" ? "Đã xác nhận" 
+												: Model.Status == "Shipping" ? "Đang giao hàng"
+												: Model.Status == "Delivered" ? "Đã giao hàng"
+												: Model.Status == "Failed" ? "Thất bại" 
+												: Model.Status == "Cancelled" ? "Đã hủy" 
+												: "Đang xử lý";
+										}
+										<span class="badge @statusClass status-badge-detail">
+											@statusText
+										</span>
+									</p>
+								</div>
+							</div>
+							<div class="col-12">
+								<div class="info-box">
+									<strong><i class="bi bi-geo-alt me-2"></i>Địa chỉ giao hàng:</strong>
+									<p>@Model.ShippingAddress</p>
+								</div>
+							</div>
+						</div>
+
+						<hr class="my-4" style="border-top: 2px dashed #dee2e6;">
+
+						<div class="products-section">
+							<h5 class="fw-bold mb-3"><i class="bi bi-list-ul me-2"></i>Chi tiết sản phẩm</h5>
+							<div class="table-responsive">
+								<table class="table table-hover align-middle order-table">
+									<thead>
+										<tr>
+											<th>Sản phẩm</th>
+											<th class="text-center">Số lượng</th>
+											<th class="text-end">Đơn giá</th>
+											<th class="text-end">Thành tiền</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.Items)
+										{
+											<tr>
+												<td><strong>@item.Product?.Name</strong></td>
+												<td class="text-center">
+													<span class="badge bg-secondary">@item.Quantity</span>
+												</td>
+												<td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+												<td class="text-end">
+													<strong class="text-primary">@((item.UnitPrice * item.Quantity).ToString("N0")) đ</strong>
+												</td>
+											</tr>
+										}
+									</tbody>
+									<tfoot>
+										<tr>
+											<th colspan="3" class="text-end">Tổng cộng:</th>
+											<th class="text-end total-amount">@Model.Total.ToString("N0") đ</th>
+										</tr>
+									</tfoot>
+								</table>
+							</div>
+						</div>
+
+						<div class="mt-4">
+							<a asp-action="History" class="btn btn-outline-secondary btn-lg back-btn">
+								<i class="bi bi-arrow-left me-2"></i>Quay lại lịch sử
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

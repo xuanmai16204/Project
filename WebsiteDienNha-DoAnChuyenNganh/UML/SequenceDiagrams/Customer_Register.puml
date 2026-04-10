@@ -1,0 +1,50 @@
+@startuml Sequence Diagram - Customer Đăng ký
+
+actor Customer
+participant "AccountController" as Controller
+participant "UserManager" as UserManager
+participant "OtpService" as OtpService
+participant "SmsService" as SmsService
+participant "Database" as DB
+
+Customer -> Controller: GET /Customer/Account/Register
+Controller -> Customer: Hiển thị form đăng ký
+
+Customer -> Controller: Nhập số điện thoại
+Customer -> Controller: POST SendOtp (phoneNumber)
+Controller -> OtpService: GenerateOtp(phoneNumber)
+OtpService -> OtpService: Tạo mã OTP 6 số
+OtpService -> OtpService: Lưu vào MemoryCache (5 phút)
+OtpService -> Controller: Trả về OTP code
+Controller -> SmsService: SendOtpAsync(phoneNumber, otpCode)
+SmsService -> SmsService: Gửi SMS qua provider
+SmsService -> Controller: Kết quả gửi SMS
+Controller -> Customer: Trả về JSON {success: true}
+
+Customer -> Controller: POST Register (phoneNumber, password, email, otpCode)
+Controller -> OtpService: VerifyOtp(phoneNumber, otpCode)
+OtpService -> OtpService: Kiểm tra OTP trong cache
+OtpService -> Controller: Kết quả xác thực
+
+alt OTP hợp lệ
+    Controller -> UserManager: FindByPhoneNumber(phoneNumber)
+    UserManager -> DB: Query Users
+    DB -> UserManager: Kết quả
+    
+    alt Số điện thoại chưa tồn tại
+        Controller -> UserManager: CreateAsync(user, password)
+        UserManager -> DB: INSERT User
+        DB -> UserManager: User created
+        UserManager -> Controller: Success
+        Controller -> UserManager: AddToRoleAsync(user, "Customer")
+        UserManager -> DB: INSERT UserRole
+        Controller -> Customer: Redirect to Home
+    else Số điện thoại đã tồn tại
+        Controller -> Customer: Error: "Số điện thoại đã được sử dụng"
+    end
+else OTP không hợp lệ
+    Controller -> Customer: Error: "Mã OTP không đúng hoặc đã hết hạn"
+end
+
+@enduml
+

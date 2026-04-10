@@ -1,0 +1,52 @@
+@startuml Sequence Diagram - Customer Chat với Chatbot
+
+actor Customer
+participant "ChatbotWidget" as Widget
+participant "ChatbotController" as Controller
+participant "ChatbotService" as Service
+participant "ProductRepository" as ProductRepo
+participant "CategoryRepository" as CategoryRepo
+participant "Database" as DB
+
+Customer -> Widget: Mở chatbot widget
+Widget -> Customer: Hiển thị giao diện chatbot
+
+Customer -> Widget: Nhập câu hỏi và gửi
+Widget -> Controller: POST /Chatbot/SendMessage (message, conversationId)
+Controller -> Service: ProcessMessageAsync(message, conversationId)
+
+alt ConversationId mới
+    Service -> DB: Tạo ChatConversation mới
+    DB -> Service: Conversation created
+end
+
+Service -> Service: Phân tích message
+
+alt Message về sản phẩm
+    Service -> Service: ExtractProductKeywords(message)
+    Service -> ProductRepo: SearchProductsAsync(keywords)
+    ProductRepo -> DB: SELECT * FROM Products WHERE Name LIKE keywords
+    DB -> ProductRepo: Products
+    ProductRepo -> Service: Products
+    Service -> Service: FormatProductsResponse(products)
+    Service -> Controller: Formatted response
+else Message về danh mục
+    Service -> CategoryRepo: GetAllAsync()
+    CategoryRepo -> DB: SELECT * FROM Categories
+    DB -> CategoryRepo: Categories
+    CategoryRepo -> Service: Categories
+    Service -> Service: FormatCategoriesResponse(categories)
+    Service -> Controller: Formatted response
+else Message khác
+    Service -> Service: GenerateRuleBasedResponseAsync(message)
+    Service -> Controller: Response
+end
+
+Controller -> DB: Lưu ChatMessage vào database
+DB -> Controller: Message saved
+Controller -> Widget: JSON {message, conversationId, timestamp}
+Widget -> Widget: Hiển thị response trong chat
+Widget -> Customer: Hiển thị câu trả lời
+
+@enduml
+

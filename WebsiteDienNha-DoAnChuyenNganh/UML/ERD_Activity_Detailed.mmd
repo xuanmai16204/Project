@@ -1,0 +1,86 @@
+---
+title: ERD - Activity Model (Detailed)
+---
+
+erDiagram
+    ApplicationUser ||--o{ Activity : "FK_Activity_ApplicationUser_UserId\nUserId (1:N)\nON DELETE SET NULL"
+    ApplicationUser ||--o{ Order : "FK_Order_ApplicationUser_UserId\nUserId (1:N)\nON DELETE RESTRICT"
+    ApplicationUser ||--o{ Cart : "FK_Cart_ApplicationUser_UserId\nUserId (1:N)\nON DELETE CASCADE"
+    
+    Activity }o--|| Product : "Polymorphic Reference\nEntityType='Product'\nEntityId → Product.Id"
+    Activity }o--|| Order : "Polymorphic Reference\nEntityType='Order'\nEntityId → Order.Id"
+    Activity }o--|| Cart : "Polymorphic Reference\nEntityType='Cart'\nEntityId → Cart.Id"
+
+    ApplicationUser {
+        nvarchar Id PK "450, NOT NULL"
+        nvarchar UserName "256, NOT NULL"
+        nvarchar NormalizedUserName "256"
+        nvarchar Email "256, NOT NULL"
+        nvarchar NormalizedEmail "256"
+        bit EmailConfirmed "NOT NULL, DEFAULT 0"
+        nvarchar PasswordHash "max"
+        nvarchar SecurityStamp "max"
+        nvarchar ConcurrencyStamp "max"
+        nvarchar PhoneNumber "max"
+        bit PhoneNumberConfirmed "NOT NULL, DEFAULT 0"
+        bit TwoFactorEnabled "NOT NULL, DEFAULT 0"
+        datetimeoffset LockoutEnd
+        bit LockoutEnabled "NOT NULL, DEFAULT 1"
+        int AccessFailedCount "NOT NULL, DEFAULT 0"
+        nvarchar FullName "100, NOT NULL"
+        nvarchar AvatarUrl "250"
+        nvarchar Address "250"
+        nvarchar City "100"
+        nvarchar District "100"
+        nvarchar Ward "100"
+        int LoyaltyPoints "NOT NULL, DEFAULT 0"
+        int LoyaltyLevelId FK "NOT NULL, DEFAULT 1"
+    }
+
+    Activity {
+        int Id PK "IDENTITY, NOT NULL, CLUSTERED"
+        nvarchar UserId FK "450, NULL"
+        nvarchar ActivityType "100, NOT NULL"
+        nvarchar Description "500, NULL"
+        nvarchar EntityType "100, NULL"
+        int EntityId "NULL"
+        nvarchar IpAddress "45, NULL"
+        nvarchar UserAgent "500, NULL"
+        nvarchar Url "500, NULL"
+        nvarchar HttpMethod "10, NULL"
+        datetime2 CreatedAt "NOT NULL, DEFAULT GETUTCDATE()"
+        nvarchar MetadataJson "max, NULL"
+    }
+
+    Product {
+        int Id PK "IDENTITY, NOT NULL, CLUSTERED"
+        nvarchar Name "200, NOT NULL"
+        nvarchar Slug "200"
+        nvarchar Description "4000"
+        decimal Price "18,2, NOT NULL"
+        decimal PromotionPrice "18,2"
+        int Stock "NOT NULL, DEFAULT 0"
+        bit IsActive "NOT NULL, DEFAULT 1"
+        nvarchar ImageUrl "1000"
+        int CategoryId FK "NOT NULL"
+        datetime2 CreatedAt "NOT NULL, DEFAULT GETUTCDATE()"
+        datetime2 UpdatedAt
+    }
+
+    Order {
+        int Id PK "IDENTITY, NOT NULL, CLUSTERED"
+        nvarchar UserId FK "450, NOT NULL"
+        datetime2 OrderDate "NOT NULL, DEFAULT GETUTCDATE()"
+        nvarchar Status "50, NOT NULL, DEFAULT 'Pending'"
+        decimal Total "18,2, NOT NULL"
+        int PaymentMethod "NOT NULL, DEFAULT 0"
+        nvarchar ShippingAddress "500"
+    }
+
+    Cart {
+        int Id PK "IDENTITY, NOT NULL, CLUSTERED"
+        nvarchar UserId FK "450, NOT NULL"
+        datetime2 CreatedAt "NOT NULL, DEFAULT GETUTCDATE()"
+        datetime2 UpdatedAt "NOT NULL, DEFAULT GETUTCDATE()"
+    }
+

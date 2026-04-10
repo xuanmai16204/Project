@@ -1,0 +1,81 @@
+@startuml Sequence Diagram - Admin Xem Dashboard
+
+actor Admin
+participant "HomeController" as Controller
+participant "ApplicationDbContext" as DbContext
+participant "Database" as DB
+
+Admin -> Controller: GET /Admin/Home/Index
+Controller -> Controller: Tính toán DateTime (today, thisMonth, lastMonth)
+
+== Thống kê tổng quan ==
+Controller -> DbContext: CountAsync(Orders)
+DbContext -> DB: SELECT COUNT(*) FROM Orders
+DB -> DbContext: TotalOrders
+DbContext -> Controller: TotalOrders
+
+Controller -> DbContext: SumAsync(Orders.Total)
+DbContext -> DB: SELECT SUM(Total) FROM Orders
+DB -> DbContext: TotalRevenue
+DbContext -> Controller: TotalRevenue
+
+Controller -> DbContext: CountAsync(Products)
+DbContext -> DB: SELECT COUNT(*) FROM Products
+DB -> DbContext: TotalProducts
+DbContext -> Controller: TotalProducts
+
+Controller -> DbContext: CountAsync(Users)
+DbContext -> DB: SELECT COUNT(*) FROM Users
+DB -> DbContext: TotalCustomers
+DbContext -> Controller: TotalCustomers
+
+== Thống kê hôm nay ==
+Controller -> DbContext: Orders.Where(OrderDate.Date == today).CountAsync()
+DbContext -> DB: SELECT COUNT(*) FROM Orders WHERE OrderDate = today
+DB -> DbContext: TodayOrders
+DbContext -> Controller: TodayOrders
+
+Controller -> DbContext: Orders.Where(OrderDate.Date == today).SumAsync(Total)
+DbContext -> DB: SELECT SUM(Total) FROM Orders WHERE OrderDate = today
+DB -> DbContext: TodayRevenue
+DbContext -> Controller: TodayRevenue
+
+== Thống kê tháng này ==
+Controller -> DbContext: Orders.Where(OrderDate >= thisMonth).CountAsync()
+DbContext -> DB: SELECT COUNT(*) FROM Orders WHERE OrderDate >= thisMonth
+DB -> DbContext: MonthOrders
+DbContext -> Controller: MonthOrders
+
+Controller -> DbContext: Orders.Where(OrderDate >= thisMonth).SumAsync(Total)
+DbContext -> DB: SELECT SUM(Total) FROM Orders WHERE OrderDate >= thisMonth
+DB -> DbContext: MonthRevenue
+DbContext -> Controller: MonthRevenue
+
+== Đơn hàng gần đây ==
+Controller -> DbContext: Orders.Include(User).OrderByDescending(OrderDate).Take(10)
+DbContext -> DB: SELECT TOP 10 Orders với User ORDER BY OrderDate DESC
+DB -> DbContext: RecentOrders
+DbContext -> Controller: RecentOrders
+
+== Thống kê theo trạng thái ==
+Controller -> DbContext: CountAsync(Orders.Where(Status == "Pending"))
+DbContext -> DB: SELECT COUNT(*) FROM Orders WHERE Status = 'Pending'
+DB -> DbContext: PendingOrders
+DbContext -> Controller: PendingOrders
+
+Controller -> DbContext: CountAsync(Orders.Where(Status == "Confirmed"))
+DbContext -> DB: SELECT COUNT(*) FROM Orders WHERE Status = 'Confirmed'
+DB -> DbContext: ConfirmedOrders
+DbContext -> Controller: ConfirmedOrders
+
+Controller -> DbContext: CountAsync(Orders.Where(Status == "Paid"))
+DbContext -> DB: SELECT COUNT(*) FROM Orders WHERE Status = 'Paid'
+DB -> DbContext: PaidOrders
+DbContext -> Controller: PaidOrders
+
+note right of Controller: Tương tự cho các trạng thái khác
+
+Controller -> Controller: Gán tất cả thống kê vào ViewBag
+Controller -> Admin: Hiển thị Dashboard với các thống kê
+
+@enduml

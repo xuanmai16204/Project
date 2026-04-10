@@ -1,0 +1,125 @@
+@startuml Use Case Diagram - Website Điện Nhà
+
+left to right direction
+
+actor Customer as customer
+actor Admin as admin
+actor Employee as employee
+
+' ============================================
+' Customer Use Cases
+' ============================================
+package "Customer" {
+    usecase UC01 as "Đăng ký tài khoản"
+    usecase UC02 as "Đăng nhập"
+    usecase UC03 as "Đăng nhập bằng Facebook"
+    usecase UC04 as "Đăng nhập bằng OTP"
+    usecase UC05 as "Xem danh sách sản phẩm"
+    usecase UC06 as "Tìm kiếm sản phẩm"
+    usecase UC07 as "Xem chi tiết sản phẩm"
+    usecase UC08 as "Thêm sản phẩm vào giỏ hàng"
+    usecase UC09 as "Xem giỏ hàng"
+    usecase UC10 as "Cập nhật số lượng"
+    usecase UC11 as "Xóa sản phẩm khỏi giỏ"
+    usecase UC12 as "Áp dụng mã giảm giá"
+    usecase UC13 as "Thanh toán VietQR"
+    usecase UC14 as "Thanh toán COD"
+    usecase UC15 as "Xem lịch sử đơn hàng"
+    usecase UC16 as "Theo dõi đơn hàng"
+    usecase UC17 as "Chat với chatbot"
+    usecase UC18 as "Xem thông báo"
+}
+
+' ============================================
+' Admin Use Cases
+' ============================================
+package "Admin" {
+    usecase UC19 as "Quản lý sản phẩm"
+    usecase UC20 as "Thêm sản phẩm"
+    usecase UC21 as "Sửa sản phẩm"
+    usecase UC22 as "Xóa sản phẩm"
+    usecase UC23 as "Quản lý danh mục"
+    usecase UC24 as "Thêm danh mục"
+    usecase UC25 as "Sửa danh mục"
+    usecase UC26 as "Xóa danh mục"
+    usecase UC27 as "Quản lý đơn hàng"
+    usecase UC28 as "Xem chi tiết đơn hàng"
+    usecase UC29 as "Cập nhật trạng thái đơn hàng"
+    usecase UC30 as "Quản lý mã giảm giá"
+    usecase UC31 as "Xem thống kê tổng quan"
+    usecase UC32 as "Xem báo cáo doanh thu"
+}
+
+' ============================================
+' Employee Use Cases
+' ============================================
+package "Employee" {
+    usecase UC33 as "Xem dashboard"
+    usecase UC34 as "Xem hiệu suất làm việc"
+}
+
+' ============================================
+' Customer Relationships
+' ============================================
+customer --> UC01
+customer --> UC02
+customer --> UC03
+customer --> UC04
+customer --> UC05
+customer --> UC06
+customer --> UC07
+customer --> UC08
+customer --> UC09
+customer --> UC10
+customer --> UC11
+customer --> UC12
+customer --> UC13
+customer --> UC14
+customer --> UC15
+customer --> UC16
+customer --> UC17
+customer --> UC18
+
+' ============================================
+' Admin Relationships
+' ============================================
+admin --> UC19
+admin --> UC20
+admin --> UC21
+admin --> UC22
+admin --> UC23
+admin --> UC24
+admin --> UC25
+admin --> UC26
+admin --> UC27
+admin --> UC28
+admin --> UC29
+admin --> UC30
+admin --> UC31
+admin --> UC32
+
+' ============================================
+' Employee Relationships
+' ============================================
+employee --> UC33
+employee --> UC34
+
+' ============================================
+' Include Relationships
+' ============================================
+UC19 ..> UC20 : <<include>>
+UC19 ..> UC21 : <<include>>
+UC19 ..> UC22 : <<include>>
+UC23 ..> UC24 : <<include>>
+UC23 ..> UC25 : <<include>>
+UC23 ..> UC26 : <<include>>
+UC27 ..> UC28 : <<include>>
+UC27 ..> UC29 : <<include>>
+
+' ============================================
+' Extend Relationships
+' ============================================
+UC13 ..> UC12 : <<extend>>
+UC14 ..> UC12 : <<extend>>
+
+@enduml

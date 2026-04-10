@@ -1,0 +1,287 @@
+@{
+	ViewData["Title"] = "Xác nhận thanh toán";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="card shadow-lg border-0">
+				<div class="card-header bg-primary text-white text-center py-4">
+					<h3 class="mb-0">
+						<i class="bi bi-qr-code me-2"></i>
+						Thanh toán qua VietQR
+					</h3>
+				</div>
+				<div class="card-body p-5">
+					<div class="text-center mb-4">
+						<p class="text-muted mb-4">Quét mã QR bằng ứng dụng ngân hàng của bạn để thanh toán</p>
+						
+						<!-- Button to show QR Code in Popup -->
+						<div class="mb-4">
+							<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
+								<i class="bi bi-qr-code me-2"></i>
+								Xem mã QR thanh toán
+							</button>
+						</div>
+
+						<!-- Bank Information -->
+						@{
+							var bankInfo = ViewBag.BankInfo as (string BankName, string AccountNumber, string AccountName)?;
+							if (bankInfo.HasValue)
+							{
+								<div class="bank-info-card p-4 mb-4" style="background: #f8f9fa; border-radius: 10px;">
+									<h5 class="mb-3"><i class="bi bi-bank me-2"></i>Thông tin tài khoản</h5>
+									<div class="row text-start">
+										<div class="col-md-6 mb-2">
+											<strong>Ngân hàng:</strong> @bankInfo.Value.BankName
+										</div>
+										<div class="col-md-6 mb-2">
+											<strong>Số tài khoản:</strong> @bankInfo.Value.AccountNumber
+										</div>
+										<div class="col-md-12 mb-2">
+											<strong>Chủ tài khoản:</strong> @bankInfo.Value.AccountName
+										</div>
+										<div class="col-md-12 mb-2">
+											<strong>Số tiền:</strong> <span class="text-danger fw-bold">@ViewBag.Amount.ToString("N0") đ</span>
+										</div>
+										<div class="col-md-12">
+											<strong>Nội dung:</strong> Don hang #@ViewBag.OrderId
+										</div>
+									</div>
+								</div>
+							}
+						}
+
+						<!-- Deeplink Button -->
+						@if (ViewBag.Deeplink != null)
+						{
+							<div class="mb-4">
+								<a href="@ViewBag.Deeplink" class="btn btn-primary btn-lg w-100">
+									<i class="bi bi-phone me-2"></i>
+									Mở ứng dụng ngân hàng
+								</a>
+							</div>
+						}
+
+						<!-- Instructions -->
+						<div class="alert alert-info">
+							<h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Hướng dẫn thanh toán:</h6>
+							<ol class="mb-0 text-start">
+								<li>Mở ứng dụng ngân hàng trên điện thoại</li>
+								<li>Chọn chức năng "Quét mã QR" hoặc "Chuyển khoản"</li>
+								<li>Quét mã QR trên màn hình hoặc nhập thông tin tài khoản</li>
+								<li>Kiểm tra thông tin và xác nhận thanh toán</li>
+								<li>Nhấn nút "Xác nhận đã thanh toán" bên dưới sau khi hoàn tất</li>
+							</ol>
+						</div>
+
+						<!-- Confirm Payment Button -->
+						<div class="d-grid gap-2">
+							<button type="button" class="btn btn-success btn-lg" id="confirmPaymentBtn">
+								<i class="bi bi-check-circle me-2"></i>
+								Xác nhận đã thanh toán
+							</button>
+							<a href="@Url.Action("Index", "ShoppingCart", new { area = "Customer" })" class="btn btn-outline-secondary">
+								<i class="bi bi-arrow-left me-2"></i>
+								Quay lại giỏ hàng
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- QR Code Modal Popup -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-primary text-white">
+				<h5 class="modal-title" id="qrCodeModalLabel">
+					<i class="bi bi-qr-code me-2"></i>
+					Mã QR thanh toán
+				</h5>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body text-center">
+				<!-- QR Code Image -->
+				<div class="qr-code-container mb-4">
+					<img src="@ViewBag.QRCodeUrl" alt="VietQR Code" class="img-fluid" style="max-width: 100%; border: 2px solid #e0e0e0; border-radius: 10px; padding: 15px; background: white;">
+				</div>
+
+				<!-- Bank Information -->
+				@{
+					var bankInfoModal = ViewBag.BankInfo as (string BankName, string AccountNumber, string AccountName)?;
+					if (bankInfoModal.HasValue)
+					{
+						<div class="bank-info-card p-3 mb-3" style="background: #f8f9fa; border-radius: 10px;">
+							<h6 class="mb-3"><i class="bi bi-bank me-2"></i>Thông tin tài khoản</h6>
+							<div class="text-start">
+								<div class="mb-2">
+									<strong>Ngân hàng:</strong> @bankInfoModal.Value.BankName
+								</div>
+								<div class="mb-2">
+									<strong>Số tài khoản:</strong> @bankInfoModal.Value.AccountNumber
+								</div>
+								<div class="mb-2">
+									<strong>Chủ tài khoản:</strong> @bankInfoModal.Value.AccountName
+								</div>
+								<div class="mb-2">
+									<strong>Số tiền:</strong> <span class="text-danger fw-bold">@ViewBag.Amount.ToString("N0") đ</span>
+								</div>
+								<div>
+									<strong>Nội dung:</strong> Don hang #@ViewBag.OrderId
+								</div>
+							</div>
+						</div>
+					}
+				}
+
+				<!-- Deeplink Button -->
+				@if (ViewBag.Deeplink != null)
+				{
+					<div class="mb-3">
+						<a href="@ViewBag.Deeplink" class="btn btn-primary w-100" target="_blank">
+							<i class="bi bi-phone me-2"></i>
+							Mở ứng dụng ngân hàng
+						</a>
+					</div>
+				}
+
+				<!-- Instructions -->
+				<div class="alert alert-info text-start mb-0">
+					<h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Hướng dẫn:</h6>
+					<ol class="mb-0 small">
+						<li>Mở ứng dụng ngân hàng trên điện thoại</li>
+						<li>Chọn chức năng "Quét mã QR"</li>
+						<li>Quét mã QR trên màn hình</li>
+						<li>Kiểm tra và xác nhận thanh toán</li>
+					</ol>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Confirmation Payment Modal Popup -->
+<div class="modal fade" id="confirmPaymentModal" tabindex="-1" aria-labelledby="confirmPaymentModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header bg-warning text-dark">
+				<h5 class="modal-title" id="confirmPaymentModalLabel">
+					<i class="bi bi-exclamation-triangle-fill me-2"></i>
+					Xác nhận thanh toán
+				</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="text-center mb-3">
+					<i class="bi bi-question-circle-fill text-warning" style="font-size: 3rem;"></i>
+				</div>
+				<p class="text-center mb-2 fw-semibold">Bạn đã hoàn tất thanh toán chưa?</p>
+				<p class="text-center text-muted small">Vui lòng chỉ xác nhận sau khi đã chuyển khoản thành công.</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					<i class="bi bi-x-lg me-1"></i>Hủy
+				</button>
+				<button type="button" class="btn btn-primary" id="confirmPaymentYesBtn">
+					<i class="bi bi-check-lg me-1"></i>Xác nhận
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@Html.AntiForgeryToken()
+	<script>
+		document.getElementById('confirmPaymentBtn').addEventListener('click', function() {
+			// Hiển thị modal popup thay vì confirm()
+			const modal = new bootstrap.Modal(document.getElementById('confirmPaymentModal'));
+			modal.show();
+		});
+
+		// Xử lý khi người dùng click "Xác nhận" trong modal
+		document.getElementById('confirmPaymentYesBtn').addEventListener('click', function() {
+			// Đóng modal
+			const modal = bootstrap.Modal.getInstance(document.getElementById('confirmPaymentModal'));
+			modal.hide();
+
+			// Disable button để tránh double click
+			this.disabled = true;
+			this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
+
+			// Gọi API xác nhận thanh toán
+			fetch('@Url.Action("ConfirmPayment", "Payment", new { area = "Customer" })', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+				},
+				body: JSON.stringify({
+					orderId: @ViewBag.OrderId
+				})
+			})
+			.then(response => {
+				if (response.ok) {
+					return response.json();
+				}
+				throw new Error('Network response was not ok');
+			})
+			.then(data => {
+				if (data.success) {
+					window.location.href = data.redirectUrl;
+				} else {
+					// Hiển thị lỗi bằng modal thay vì alert
+					showErrorModal('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại'));
+					this.disabled = false;
+					this.innerHTML = '<i class="bi bi-check-lg me-1"></i>Xác nhận';
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				showErrorModal('Có lỗi xảy ra khi xác nhận thanh toán. Vui lòng thử lại.');
+				this.disabled = false;
+				this.innerHTML = '<i class="bi bi-check-lg me-1"></i>Xác nhận';
+			});
+		});
+
+		// Function to show error modal
+		function showErrorModal(message) {
+			const errorModal = document.createElement('div');
+			errorModal.className = 'modal fade';
+			errorModal.innerHTML = `
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header bg-danger text-white">
+							<h5 class="modal-title">
+								<i class="bi bi-exclamation-triangle-fill me-2"></i>
+								Thông báo
+							</h5>
+							<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+						</div>
+						<div class="modal-body">
+							<p class="mb-0">${message}</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
+						</div>
+					</div>
+				</div>
+			`;
+			document.body.appendChild(errorModal);
+			const modal = new bootstrap.Modal(errorModal);
+			modal.show();
+			errorModal.addEventListener('hidden.bs.modal', () => {
+				errorModal.remove();
+			});
+		}
+	</script>
+}
+

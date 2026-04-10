@@ -1,0 +1,75 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.DiscountCode
+@{
+	ViewData["Title"] = "Xóa mã giảm giá";
+	var isExpired = DateTime.UtcNow > Model.EndDate;
+	var isActive = Model.IsActive && !isExpired;
+}
+
+<div class="container my-4">
+	<div class="row justify-content-center">
+		<div class="col-12 col-lg-8">
+			<div class="card shadow-sm border-0 border-danger">
+				<div class="card-header bg-danger text-white">
+					<h4 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Xóa mã giảm giá</h4>
+				</div>
+				<div class="card-body p-4">
+					<div class="alert alert-warning">
+						<strong><i class="bi bi-exclamation-triangle me-2"></i>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa mã giảm giá này không? Hành động này không thể hoàn tác.
+					</div>
+
+					<dl class="row">
+						<dt class="col-sm-4">Mã giảm giá:</dt>
+						<dd class="col-sm-8"><strong class="text-primary">@Model.Code</strong></dd>
+
+						<dt class="col-sm-4">Mô tả:</dt>
+						<dd class="col-sm-8">@(Model.Description ?? "Không có mô tả")</dd>
+
+						<dt class="col-sm-4">Giảm giá:</dt>
+						<dd class="col-sm-8">
+							@if (Model.DiscountPercent.HasValue)
+							{
+								<span class="badge bg-success">@Model.DiscountPercent.Value%</span>
+							}
+							else if (Model.DiscountAmount.HasValue)
+							{
+								<span class="badge bg-info">@Model.DiscountAmount.Value.ToString("N0") đ</span>
+							}
+						</dd>
+
+						<dt class="col-sm-4">Trạng thái:</dt>
+						<dd class="col-sm-8">
+							@if (isExpired)
+							{
+								<span class="badge bg-secondary">Hết hạn</span>
+							}
+							else if (Model.IsActive)
+							{
+								<span class="badge bg-success">Đang hoạt động</span>
+							}
+							else
+							{
+								<span class="badge bg-danger">Vô hiệu hóa</span>
+							}
+						</dd>
+
+						<dt class="col-sm-4">Số lần sử dụng:</dt>
+						<dd class="col-sm-8">@Model.UsageCount lần</dd>
+					</dl>
+
+					<form asp-action="Delete" method="post" class="mt-4">
+						<input type="hidden" asp-for="Id" />
+						<div class="d-grid gap-2 d-md-flex justify-content-md-end">
+							<a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+								<i class="bi bi-arrow-left me-2"></i>Quay lại
+							</a>
+							<button type="submit" class="btn btn-danger btn-lg">
+								<i class="bi bi-trash me-2"></i>Xóa
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

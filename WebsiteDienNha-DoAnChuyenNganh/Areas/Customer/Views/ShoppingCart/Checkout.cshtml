@@ -1,0 +1,768 @@
+@model WebsiteDienNha_DoAnChuyenNganh.DTO.CheckoutViewModel
+@{
+	ViewData["Title"] = "Thanh toán";
+	var cartTotal = ViewBag.CartTotal as decimal? ?? Model.Total;
+	var discountAmount = ViewBag.DiscountAmount as decimal? ?? 0;
+	var appliedDiscountCode = ViewBag.AppliedDiscountCode as string;
+}
+
+<style>
+	/* Checkout Page Enhancements */
+	.checkout-page {
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		min-height: 100vh;
+		padding: 2rem 0;
+	}
+
+	.checkout-header-section {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 1rem;
+		padding: 2rem;
+		color: white;
+		box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+		margin-bottom: 2rem;
+		animation: slideDown 0.5s ease-out;
+	}
+
+	.checkout-header-icon {
+		width: 70px;
+		height: 70px;
+		background: rgba(255, 255, 255, 0.2);
+		backdrop-filter: blur(10px);
+		border-radius: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2rem;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+		transition: transform 0.3s ease;
+	}
+
+	.checkout-header-icon:hover {
+		transform: scale(1.1) rotate(5deg);
+	}
+
+	.checkout-header-section h1 {
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+		text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+	}
+
+	.checkout-header-section p {
+		font-size: 1.1rem;
+		opacity: 0.95;
+		margin: 0;
+	}
+
+	@@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+</style>
+
+<div class="checkout-page">
+	<div class="container my-4 my-md-5">
+		<!-- Page Header -->
+		<div class="checkout-header-section">
+			<div class="d-flex align-items-center gap-3">
+				<div class="checkout-header-icon">
+					<i class="bi bi-cart-check"></i>
+				</div>
+				<div>
+					<h1>Thanh toán đơn hàng</h1>
+					<p>Vui lòng điền thông tin giao hàng và chọn phương thức thanh toán</p>
+				</div>
+			</div>
+		</div>
+
+	<div class="row g-4">
+		<div class="col-12 col-lg-8">
+			<div class="card shadow-lg border-0 checkout-form-card">
+				<div class="card-header bg-primary bg-gradient text-white py-3">
+					<h4 class="mb-0 fw-semibold">
+						<i class="bi bi-truck me-2"></i>Thông tin giao hàng
+					</h4>
+				</div>
+				<div class="card-body p-4">
+					<form asp-action="Checkout" method="post" id="checkoutForm">
+						<div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-pill"></div>
+						
+						<div class="form-group-wrapper mb-4">
+							<label asp-for="FullName" class="form-label fw-semibold mb-2">
+								<i class="bi bi-person me-2 text-primary"></i>Họ và tên <span class="text-danger">*</span>
+							</label>
+							<input asp-for="FullName" class="form-control form-control-lg checkout-input" placeholder="Nhập họ và tên đầy đủ" />
+							<span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
+						</div>
+
+						<div class="form-group-wrapper mb-4">
+							<label asp-for="PhoneNumber" class="form-label fw-semibold mb-2">
+								<i class="bi bi-telephone me-2 text-primary"></i>Số điện thoại <span class="text-danger">*</span>
+							</label>
+							<input asp-for="PhoneNumber" class="form-control form-control-lg checkout-input" placeholder="Nhập số điện thoại" />
+							<span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+						</div>
+
+						<div class="form-group-wrapper mb-4">
+							<label asp-for="ShippingAddress" class="form-label fw-semibold mb-2">
+								<i class="bi bi-geo-alt me-2 text-primary"></i>Địa chỉ giao hàng <span class="text-danger">*</span>
+							</label>
+							<textarea asp-for="ShippingAddress" class="form-control checkout-input" rows="3" placeholder="Nhập địa chỉ giao hàng chi tiết (số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố)"></textarea>
+							<span asp-validation-for="ShippingAddress" class="text-danger small mt-1 d-block"></span>
+						</div>
+
+						<div class="form-group-wrapper mb-4">
+							<label asp-for="Note" class="form-label fw-semibold mb-2">
+								<i class="bi bi-sticky me-2 text-muted"></i>Ghi chú (tùy chọn)
+							</label>
+							<textarea asp-for="Note" class="form-control checkout-input" rows="2" placeholder="Ghi chú thêm cho đơn hàng (ví dụ: thời gian giao hàng, hướng dẫn địa chỉ...)"></textarea>
+						</div>
+
+					<div class="mb-4">
+						<label class="form-label fw-semibold mb-3 d-flex align-items-center">
+							<i class="bi bi-credit-card me-2 text-primary"></i>Phương thức thanh toán <span class="text-danger ms-1">*</span>
+						</label>
+						<div class="payment-methods">
+							<div class="payment-method-option">
+								<input class="form-check-input" type="radio" asp-for="PaymentMethod" value="@((int)WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.VietQR)" id="paymentVietQR" checked>
+								<label class="payment-method-label" for="paymentVietQR">
+									<div class="payment-method-content">
+										<div class="payment-method-icon vietqr-icon">
+											<i class="bi bi-qr-code"></i>
+										</div>
+										<div class="payment-method-info">
+											<strong class="payment-method-title">Thanh toán qua VietQR</strong>
+											<div class="payment-method-desc">Quét mã QR để thanh toán nhanh chóng và an toàn</div>
+										</div>
+										<div class="payment-method-check">
+											<i class="bi bi-check-circle-fill"></i>
+										</div>
+									</div>
+								</label>
+							</div>
+
+							<div class="payment-method-option">
+								<input class="form-check-input" type="radio" asp-for="PaymentMethod" value="@((int)WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.COD)" id="paymentCOD">
+								<label class="payment-method-label" for="paymentCOD">
+									<div class="payment-method-content">
+										<div class="payment-method-icon cod-icon">
+											<i class="bi bi-cash-coin"></i>
+										</div>
+										<div class="payment-method-info">
+											<strong class="payment-method-title">Thanh toán khi nhận hàng (COD)</strong>
+											<div class="payment-method-desc">Thanh toán bằng tiền mặt khi nhận được sản phẩm</div>
+										</div>
+										<div class="payment-method-check">
+											<i class="bi bi-check-circle-fill"></i>
+										</div>
+									</div>
+								</label>
+							</div>
+
+							<div class="payment-method-option">
+								<input class="form-check-input" type="radio" asp-for="PaymentMethod" value="@((int)WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.BankTransfer)" id="paymentBankTransfer">
+								<label class="payment-method-label" for="paymentBankTransfer">
+									<div class="payment-method-content">
+										<div class="payment-method-icon bank-icon">
+											<i class="bi bi-bank"></i>
+										</div>
+										<div class="payment-method-info">
+											<strong class="payment-method-title">Chuyển khoản ngân hàng</strong>
+											<div class="payment-method-desc">Chuyển khoản vào tài khoản ngân hàng của chúng tôi</div>
+										</div>
+										<div class="payment-method-check">
+											<i class="bi bi-check-circle-fill"></i>
+										</div>
+									</div>
+								</label>
+							</div>
+						</div>
+						<span asp-validation-for="PaymentMethod" class="text-danger small mt-2 d-block"></span>
+					</div>
+
+					<div class="d-flex flex-column flex-md-row gap-3 justify-content-md-end mt-4 pt-4 border-top">
+						<a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill order-2 order-md-1">
+							<i class="bi bi-arrow-left me-2"></i>Quay lại giỏ hàng
+						</a>
+						<button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm order-1 order-md-2 checkout-submit-btn">
+							<i class="bi bi-credit-card me-2"></i>Hoàn tất thanh toán
+						</button>
+					</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-12 col-lg-4">
+			<div class="card shadow-lg border-0 sticky-top order-summary-card" style="top: calc(50px + 148px + 50px + 30px); z-index: 998;">
+				<div class="card-header bg-primary bg-gradient text-white py-3">
+					<h5 class="mb-0 fw-semibold">
+						<i class="bi bi-receipt-cutoff me-2"></i>Tóm tắt đơn hàng
+					</h5>
+				</div>
+				<div class="card-body p-4">
+					<div class="order-items mb-3">
+						@foreach (var tuple in Model.CartItems)
+						{
+							var item = tuple.Item;
+							var product = tuple.Product;
+							<div class="order-item">
+								<div class="d-flex align-items-start gap-3">
+									@if (product != null && !string.IsNullOrEmpty(product.ImageUrl))
+									{
+										<div class="order-item-image">
+											<img src="@product.ImageUrl" alt="@product.Name" class="img-fluid rounded">
+										</div>
+									}
+									else
+									{
+										<div class="order-item-image-placeholder">
+											<i class="bi bi-image"></i>
+										</div>
+									}
+									<div class="flex-grow-1">
+										<strong class="order-item-name d-block mb-1">@(product?.Name ?? $"Sản phẩm #{item.ProductId}")</strong>
+										<div class="text-muted small mb-1">Số lượng: <strong class="text-dark">@item.Quantity</strong></div>
+										<div class="order-item-price">
+											<strong>@((item.UnitPrice * item.Quantity).ToString("N0")) đ</strong>
+										</div>
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+					<div class="order-summary-divider"></div>
+					<div class="order-total-section">
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<span class="text-muted">Số lượng sản phẩm:</span>
+							<strong>@Model.CartItems.Sum(t => t.Item.Quantity)</strong>
+						</div>
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<span class="text-muted">Tạm tính:</span>
+							<strong>@cartTotal.ToString("N0") đ</strong>
+						</div>
+						@if (discountAmount > 0 && !string.IsNullOrEmpty(appliedDiscountCode))
+						{
+							<div class="d-flex justify-content-between align-items-center mb-2 discount-summary-item">
+								<span class="text-success fw-semibold">
+									<i class="bi bi-ticket-perforated me-1"></i>Mã giảm giá <strong>@appliedDiscountCode</strong>:
+								</span>
+								<strong class="text-success fs-5">-@discountAmount.ToString("N0") đ</strong>
+							</div>
+							<div class="alert alert-success border-0 rounded-pill mb-3 py-2 px-3">
+								<i class="bi bi-check-circle me-2"></i>
+								<small>Đã áp dụng mã giảm giá <strong>@appliedDiscountCode</strong> - Tiết kiệm <strong>@discountAmount.ToString("N0") đ</strong></small>
+							</div>
+						}
+						<div class="order-total">
+							<div class="d-flex justify-content-between align-items-center">
+								<h5 class="mb-0 fw-semibold">Tổng cộng:</h5>
+								<h3 class="mb-0 text-primary fw-bold">@Model.Total.ToString("N0") đ</h3>
+							</div>
+							@if (discountAmount > 0)
+							{
+								<small class="text-muted d-block mt-2">
+									<i class="bi bi-info-circle me-1"></i>
+									Đã giảm <strong class="text-success">@discountAmount.ToString("N0") đ</strong> từ <strong>@cartTotal.ToString("N0") đ</strong>
+								</small>
+							}
+						</div>
+					</div>
+					<div class="alert alert-info small mt-4 mb-0 rounded-pill border-0 shadow-sm">
+						<i class="bi bi-shield-check me-2"></i>
+						<strong>Thanh toán an toàn</strong> và bảo mật
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.discount-summary-item {
+		padding: 0.5rem;
+		background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+		border-radius: 0.5rem;
+		margin: 0.5rem 0;
+	}
+
+	/* Form Card */
+	.checkout-form-card {
+		border-radius: 1rem;
+		overflow: hidden;
+		animation: fadeInUp 0.6s ease-out;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.checkout-form-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+	}
+
+	/* Form Inputs */
+	.form-group-wrapper {
+		position: relative;
+	}
+
+	.checkout-input {
+		border: 2px solid #e9ecef;
+		border-radius: 0.75rem;
+		transition: all 0.3s ease;
+		padding: 0.75rem 1rem;
+	}
+
+	.checkout-input:focus {
+		border-color: #0d6efd;
+		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+		transform: translateY(-2px);
+	}
+
+	/* Payment Methods */
+	.payment-methods {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.payment-method-option {
+		position: relative;
+	}
+
+	.payment-method-option .form-check-input {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+
+	.payment-method-label {
+		display: block;
+		cursor: pointer;
+		border: 2px solid #e9ecef;
+		border-radius: 1rem;
+		padding: 1.25rem;
+		transition: all 0.3s ease;
+		background: #fff;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.payment-method-label::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.1) 100%);
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.payment-method-option .form-check-input:checked + .payment-method-label {
+		border-color: #0d6efd;
+		background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.1) 100%);
+		box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+		transform: translateY(-2px);
+	}
+
+	.payment-method-option .form-check-input:checked + .payment-method-label::before {
+		opacity: 1;
+	}
+
+	.payment-method-label:hover {
+		border-color: #0d6efd;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.payment-method-content {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		position: relative;
+		z-index: 1;
+	}
+
+	.payment-method-icon {
+		width: 60px;
+		height: 60px;
+		border-radius: 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.75rem;
+		flex-shrink: 0;
+		transition: all 0.3s ease;
+	}
+
+	.vietqr-icon {
+		background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+		color: white;
+	}
+
+	.cod-icon {
+		background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+		color: white;
+	}
+
+	.bank-icon {
+		background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+		color: white;
+	}
+
+	.payment-method-option .form-check-input:checked + .payment-method-label .payment-method-icon {
+		transform: scale(1.1);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	}
+
+	.payment-method-info {
+		flex-grow: 1;
+	}
+
+	.payment-method-title {
+		display: block;
+		font-size: 1.1rem;
+		color: #212529;
+		margin-bottom: 0.25rem;
+	}
+
+	.payment-method-desc {
+		font-size: 0.875rem;
+		color: #6c757d;
+		margin: 0;
+	}
+
+	.payment-method-check {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		color: #0d6efd;
+		font-size: 1.5rem;
+		opacity: 0;
+		transform: scale(0);
+		transition: all 0.3s ease;
+	}
+
+	.payment-method-option .form-check-input:checked + .payment-method-label .payment-method-check {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	/* Checkout Submit Button */
+	.checkout-submit-btn {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border: none;
+		transition: all 0.3s ease;
+		font-weight: 600;
+		padding: 0.875rem 2.5rem;
+		position: relative;
+		overflow: hidden;
+		box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+	}
+
+	.checkout-submit-btn::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 0;
+		height: 0;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.3);
+		transform: translate(-50%, -50%);
+		transition: width 0.6s, height 0.6s;
+	}
+
+	.checkout-submit-btn:hover::before {
+		width: 400px;
+		height: 400px;
+	}
+
+	.checkout-submit-btn:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+		background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+	}
+
+	.checkout-submit-btn:active {
+		transform: translateY(-1px);
+	}
+
+	.checkout-submit-btn i {
+		position: relative;
+		z-index: 1;
+		transition: transform 0.3s ease;
+	}
+
+	.checkout-submit-btn:hover i {
+		transform: scale(1.2);
+	}
+
+	/* Order Summary Card */
+	.order-summary-card {
+		border-radius: 1rem;
+		animation: fadeInUp 0.6s ease-out 0.2s both;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		z-index: 998; /* Thấp hơn header (1000) nhưng cao hơn content */
+	}
+
+	.order-summary-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+	}
+
+	.order-items {
+		max-height: 400px;
+		overflow-y: auto;
+		padding-right: 0.5rem;
+	}
+
+	.order-items::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.order-items::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 10px;
+	}
+
+	.order-items::-webkit-scrollbar-thumb {
+		background: #0d6efd;
+		border-radius: 10px;
+	}
+
+	.order-item {
+		padding: 1rem;
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		border-radius: 0.75rem;
+		margin-bottom: 0.75rem;
+		transition: all 0.3s ease;
+		border: 1px solid rgba(0,0,0,0.05);
+		box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+	}
+
+	.order-item:hover {
+		background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+		transform: translateX(4px);
+		box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+		border-color: rgba(13, 110, 253, 0.2);
+	}
+
+	.order-item-image {
+		width: 60px;
+		height: 60px;
+		border-radius: 0.5rem;
+		overflow: hidden;
+		flex-shrink: 0;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.order-item-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.order-item-image-placeholder {
+		width: 60px;
+		height: 60px;
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		border-radius: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #adb5bd;
+		font-size: 1.25rem;
+	}
+
+	.order-item-name {
+		font-size: 0.95rem;
+		line-height: 1.4;
+	}
+
+	.order-item-price {
+		color: #0d6efd;
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.order-summary-divider {
+		height: 2px;
+		background: linear-gradient(90deg, transparent, #dee2e6, transparent);
+		margin: 1.5rem 0;
+	}
+
+	.order-total-section {
+		background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.1) 100%);
+		padding: 1.25rem;
+		border-radius: 0.75rem;
+		margin-top: 1rem;
+		border: 2px solid rgba(13, 110, 253, 0.1);
+		box-shadow: 0 4px 12px rgba(13, 110, 253, 0.1);
+	}
+
+	.order-total {
+		padding-top: 1rem;
+		margin-top: 1rem;
+		border-top: 2px solid #0d6efd;
+		position: relative;
+	}
+
+	.order-total::before {
+		content: '';
+		position: absolute;
+		top: -2px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 60px;
+		height: 2px;
+		background: linear-gradient(90deg, transparent, #0d6efd, transparent);
+	}
+
+	/* Responsive Design */
+	@@media (max-width: 991.98px) {
+		.order-summary-card {
+			position: static !important;
+			margin-top: 2rem;
+			top: auto !important;
+		}
+	}
+
+		.checkout-header-icon {
+			width: 50px;
+			height: 50px;
+			font-size: 1.5rem;
+		}
+
+		.payment-method-icon {
+			width: 50px;
+			height: 50px;
+			font-size: 1.5rem;
+		}
+
+		.payment-method-title {
+			font-size: 1rem;
+		}
+	}
+
+	@@media (max-width: 767.98px) {
+		.checkout-form-card .card-body,
+		.order-summary-card .card-body {
+			padding: 1.5rem;
+		}
+
+		.payment-method-content {
+			flex-wrap: wrap;
+		}
+
+		.payment-method-info {
+			flex-basis: 100%;
+			margin-top: 0.5rem;
+		}
+
+		.order-item {
+			padding: 0.75rem;
+		}
+	}
+
+	/* Animations */
+	@@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.checkout-form-card,
+	.order-summary-card {
+		animation: fadeInUp 0.5s ease-out;
+	}
+
+	.payment-method-option {
+		animation: fadeInUp 0.5s ease-out;
+	}
+
+	.payment-method-option:nth-child(1) {
+		animation-delay: 0.1s;
+	}
+
+	.payment-method-option:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+
+	.payment-method-option:nth-child(3) {
+		animation-delay: 0.3s;
+	}
+
+	/* Form Validation Styles */
+	.field-validation-error {
+		display: block;
+		margin-top: 0.25rem;
+		font-size: 0.875rem;
+	}
+
+	.input-validation-error {
+		border-color: #dc3545 !important;
+	}
+
+	.input-validation-error:focus {
+		border-color: #dc3545 !important;
+		box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.15) !important;
+	}
+</style>
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Add smooth scroll behavior
+			const form = document.getElementById('checkoutForm');
+			if (form) {
+				form.addEventListener('submit', function(e) {
+					const firstError = form.querySelector('.input-validation-error, .field-validation-error');
+					if (firstError) {
+						e.preventDefault();
+						firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					}
+				});
+			}
+
+			// Add animation to payment method selection
+			const paymentInputs = document.querySelectorAll('.payment-method-option input[type="radio"]');
+			paymentInputs.forEach(input => {
+				input.addEventListener('change', function() {
+					const label = this.closest('.payment-method-option').querySelector('.payment-method-label');
+					if (label) {
+						label.style.transform = 'scale(0.98)';
+						setTimeout(() => {
+							label.style.transform = '';
+						}, 150);
+					}
+				});
+			});
+
+			// Add loading state to submit button
+			const submitBtn = document.querySelector('.checkout-submit-btn');
+			if (submitBtn && form) {
+				form.addEventListener('submit', function() {
+					submitBtn.disabled = true;
+					submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+				});
+			}
+		});
+	</script>
+}

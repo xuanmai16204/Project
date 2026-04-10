@@ -1,0 +1,551 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.Order
+@{
+	ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+	<div class="alert alert-success alert-dismissible fade show rounded-pill shadow-sm" role="alert">
+		<i class="bi bi-check-circle-fill me-2"></i><strong>Thành công!</strong> @TempData["SuccessMessage"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+	<div class="alert alert-danger alert-dismissible fade show rounded-pill shadow-sm" role="alert">
+		<i class="bi bi-exclamation-circle-fill me-2"></i><strong>Lỗi!</strong> @TempData["ErrorMessage"]
+		<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+	</div>
+}
+
+<!-- Page Header -->
+<div class="row mb-4">
+	<div class="col-12">
+			<div class="d-flex justify-content-between align-items-center">
+				<div class="d-flex align-items-center gap-3">
+					<div class="page-header-icon">
+						<i class="bi bi-receipt"></i>
+					</div>
+					<div>
+						<h1 class="fw-bold mb-2 display-6">
+							Chi tiết đơn hàng #@Model.Id
+						</h1>
+						<p class="text-muted mb-0">Xem và cập nhật thông tin đơn hàng</p>
+					</div>
+				</div>
+				<div class="d-flex gap-2">
+					<a asp-action="PrintInvoice" asp-route-id="@Model.Id" target="_blank" class="btn btn-success btn-lg rounded-pill">
+						<i class="bi bi-printer me-2"></i>Xuất hóa đơn
+					</a>
+					<a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill">
+						<i class="bi bi-arrow-left me-2"></i>Quay lại
+					</a>
+				</div>
+			</div>
+	</div>
+</div>
+
+<div class="row g-4">
+	<div class="col-12 col-lg-8">
+		<div class="card shadow-lg border-0 mb-4 order-info-card">
+			<div class="card-header bg-primary bg-gradient text-white py-3">
+				<h5 class="mb-0 fw-semibold">
+					<i class="bi bi-info-circle me-2"></i>Thông tin đơn hàng
+				</h5>
+			</div>
+			<div class="card-body p-4">
+				<div class="row g-4">
+					<div class="col-12 col-md-6">
+						<div class="info-item">
+							<div class="info-icon-wrapper">
+								<i class="bi bi-calendar-check"></i>
+							</div>
+							<div class="info-content">
+								<label class="info-label">Ngày đặt:</label>
+								<p class="info-value mb-0">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-12 col-md-6">
+						<div class="info-item">
+							<div class="info-icon-wrapper">
+								<i class="bi bi-person-circle"></i>
+							</div>
+							<div class="info-content">
+								<label class="info-label">Khách hàng:</label>
+								<p class="info-value mb-0">@(Model.User?.Email ?? "N/A")</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-12">
+						<div class="info-item">
+							<div class="info-icon-wrapper">
+								<i class="bi bi-geo-alt-fill"></i>
+							</div>
+							<div class="info-content flex-grow-1">
+								<label class="info-label">Địa chỉ giao hàng:</label>
+								<p class="info-value mb-0">@Model.ShippingAddress</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-12 col-md-6">
+						<div class="info-item">
+							<div class="info-icon-wrapper">
+								<i class="bi bi-credit-card-2-front"></i>
+							</div>
+							<div class="info-content">
+								<label class="info-label">Phương thức thanh toán:</label>
+								<div class="info-value">
+									@switch (Model.PaymentMethod)
+									{
+									case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.VietQR:
+										<span class="badge bg-primary bg-gradient px-3 py-2">
+											<i class="bi bi-qr-code me-1"></i>VietQR
+											</span>
+											break;
+										case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.COD:
+											<span class="badge bg-success bg-gradient px-3 py-2">
+												<i class="bi bi-cash-coin me-1"></i>COD
+											</span>
+											break;
+										case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.BankTransfer:
+											<span class="badge bg-info bg-gradient px-3 py-2">
+												<i class="bi bi-bank me-1"></i>Chuyển khoản
+											</span>
+											break;
+									}
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-12 col-md-6">
+						<div class="info-item">
+							<div class="info-icon-wrapper">
+								<i class="bi bi-currency-dollar"></i>
+							</div>
+							<div class="info-content">
+								<label class="info-label">Tổng tiền:</label>
+								<p class="info-value text-primary fw-bold fs-5 mb-0">@Model.Total.ToString("N0") đ</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="card shadow-lg border-0 order-items-card">
+			<div class="card-header bg-primary bg-gradient text-white py-3">
+				<h5 class="mb-0 fw-semibold">
+					<i class="bi bi-list-ul me-2"></i>Chi tiết sản phẩm (@Model.Items.Count sản phẩm)
+				</h5>
+			</div>
+			<div class="card-body p-0">
+				<div class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<thead class="table-light">
+							<tr>
+								<th class="ps-4" style="width: 40%;">Sản phẩm</th>
+								<th class="text-center" style="width: 20%;">Số lượng</th>
+								<th class="text-end" style="width: 20%;">Đơn giá</th>
+								<th class="text-end pe-4" style="width: 20%;">Thành tiền</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.Items)
+							{
+								<tr class="order-item-row">
+									<td class="ps-4">
+										<strong class="text-dark">@item.Product?.Name</strong>
+									</td>
+									<td class="text-center">
+										<span class="badge bg-secondary">@item.Quantity</span>
+									</td>
+									<td class="text-end">
+										<span class="text-dark">@item.UnitPrice.ToString("N0") đ</span>
+									</td>
+									<td class="text-end pe-4">
+										<strong class="text-primary">@((item.UnitPrice * item.Quantity).ToString("N0")) đ</strong>
+									</td>
+								</tr>
+							}
+						</tbody>
+						<tfoot>
+							<tr class="table-total-row">
+								<td colspan="3" class="text-end ps-4 py-4">
+									<span class="fs-5 fw-semibold text-dark">Tổng cộng:</span>
+								</td>
+								<td class="text-end pe-4 py-4">
+									<span class="fs-3 fw-bold text-primary">@Model.Total.ToString("N0") đ</span>
+								</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 col-lg-4">
+		<div class="card shadow-lg border-0 sticky-top order-update-card" style="top: 20px;">
+			<div class="card-header bg-primary bg-gradient text-white py-3">
+				<h5 class="mb-0 fw-semibold">
+					<i class="bi bi-gear me-2"></i>Cập nhật đơn hàng
+				</h5>
+			</div>
+			<div class="card-body">
+				<!-- Current Status Display -->
+				<div class="current-status-section mb-4">
+					<label class="form-label fw-semibold mb-2 text-dark">
+						<i class="bi bi-info-circle me-2 text-primary"></i>Trạng thái hiện tại:
+					</label>
+					<div class="current-status-badge">
+						@{
+							var currentStatusClass = Model.Status == "Paid" || Model.Status == "Confirmed" || Model.Status == "Delivered"
+								? "status-current-success" 
+								: Model.Status == "Failed" || Model.Status == "Cancelled" 
+								? "status-current-danger" 
+								: "status-current-warning";
+							var currentStatusText = Model.Status == "Paid" ? "Đã thanh toán" 
+								: Model.Status == "Confirmed" ? "Đã xác nhận" 
+								: Model.Status == "Shipping" ? "Đang giao hàng"
+								: Model.Status == "Delivered" ? "Đã giao hàng"
+								: Model.Status == "Failed" ? "Thất bại" 
+								: Model.Status == "Cancelled" ? "Đã hủy" 
+								: "Đang xử lý";
+						}
+						<span class="status-badge-display @currentStatusClass">
+							<i class="bi @(Model.Status == "Paid" || Model.Status == "Confirmed" || Model.Status == "Delivered" ? "bi-check-circle-fill" : Model.Status == "Failed" || Model.Status == "Cancelled" ? "bi-x-circle-fill" : "bi-clock-history") me-2"></i>
+							@currentStatusText
+						</span>
+					</div>
+				</div>
+
+				<div class="divider-line mb-4"></div>
+
+				<!-- Update Form -->
+				<form asp-action="UpdateOrder" method="post" id="updateOrderForm">
+					<input type="hidden" name="id" value="@Model.Id" />
+					
+					<!-- Status Update -->
+					<div class="mb-4">
+						<label class="form-label fw-semibold mb-2 text-dark">
+							<i class="bi bi-arrow-repeat me-2 text-primary"></i>Trạng thái mới:
+						</label>
+						<select name="status" class="form-select form-select-lg status-select" required>
+							<option value="Pending" @@(Model.Status == "Pending" ? "selected" : "")>⏳ Đang xử lý</option>
+							<option value="Confirmed" @@(Model.Status == "Confirmed" ? "selected" : "")>✅ Đã xác nhận</option>
+							<option value="Paid" @@(Model.Status == "Paid" ? "selected" : "")>💰 Đã thanh toán</option>
+							<option value="Shipping" @@(Model.Status == "Shipping" ? "selected" : "")>🚚 Đang giao hàng</option>
+							<option value="Delivered" @@(Model.Status == "Delivered" ? "selected" : "")>📦 Đã giao hàng</option>
+							<option value="Cancelled" @@(Model.Status == "Cancelled" ? "selected" : "")>❌ Đã hủy</option>
+							<option value="Failed" @@(Model.Status == "Failed" ? "selected" : "")>⚠️ Thất bại</option>
+						</select>
+					</div>
+
+					<!-- Shipping Address Update -->
+					<div class="mb-4">
+						<label class="form-label fw-semibold mb-2 text-dark">
+							<i class="bi bi-geo-alt me-2 text-primary"></i>Địa chỉ giao hàng:
+						</label>
+						<textarea name="shippingAddress" class="form-control shipping-address-input" rows="3" placeholder="Nhập địa chỉ giao hàng mới (để trống nếu không thay đổi)">@Model.ShippingAddress</textarea>
+						<small class="text-muted">Để trống nếu không muốn thay đổi địa chỉ</small>
+					</div>
+
+					<!-- Payment Method Info (Read-only) -->
+					<div class="mb-4">
+						<label class="form-label fw-semibold mb-2 text-dark">
+							<i class="bi bi-credit-card me-2 text-primary"></i>Phương thức thanh toán:
+						</label>
+						<div class="payment-method-display">
+							@switch (Model.PaymentMethod)
+							{
+								case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.VietQR:
+									<span class="badge bg-primary bg-gradient px-3 py-2">
+										<i class="bi bi-qr-code me-1"></i>VietQR
+									</span>
+									break;
+								case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.COD:
+									<span class="badge bg-success bg-gradient px-3 py-2">
+										<i class="bi bi-cash-coin me-1"></i>Thanh toán khi nhận hàng (COD)
+									</span>
+									break;
+								case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.BankTransfer:
+									<span class="badge bg-info bg-gradient px-3 py-2">
+										<i class="bi bi-bank me-1"></i>Chuyển khoản ngân hàng
+									</span>
+									break;
+							}
+						</div>
+					</div>
+
+					<!-- Order Summary -->
+					<div class="order-summary-box mb-4">
+						<div class="d-flex justify-content-between align-items-center mb-2">
+							<span class="text-muted small">Tổng sản phẩm:</span>
+							<strong class="text-dark">@Model.Items.Sum(i => i.Quantity) sản phẩm</strong>
+						</div>
+						<div class="d-flex justify-content-between align-items-center">
+							<span class="text-muted small">Tổng tiền:</span>
+							<strong class="text-primary fs-5">@Model.Total.ToString("N0") đ</strong>
+						</div>
+					</div>
+
+					<!-- Action Buttons -->
+					<div class="d-grid gap-2">
+						<button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm update-order-btn">
+							<i class="bi bi-save me-2"></i>Cập nhật đơn hàng
+						</button>
+						<button type="button" class="btn btn-outline-secondary rounded-pill" onclick="document.getElementById('updateOrderForm').reset();">
+							<i class="bi bi-arrow-counterclockwise me-2"></i>Đặt lại
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<style>
+	/* Page Header */
+	.page-header-icon {
+		width: 60px;
+		height: 60px;
+		background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+		border-radius: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		font-size: 1.75rem;
+		box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+	}
+
+	/* Order Info Card */
+	.order-info-card {
+		border-radius: 1rem;
+		overflow: hidden;
+	}
+
+	.info-item {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+		padding: 1rem;
+		background: #f8f9fa;
+		border-radius: 0.75rem;
+		transition: all 0.3s ease;
+	}
+
+	.info-item:hover {
+		background: #e9ecef;
+		transform: translateX(4px);
+	}
+
+	.info-icon-wrapper {
+		width: 50px;
+		height: 50px;
+		background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+		border-radius: 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		font-size: 1.25rem;
+		flex-shrink: 0;
+		box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+	}
+
+	.info-content {
+		flex-grow: 1;
+	}
+
+	.info-label {
+		display: block;
+		color: #6c757d;
+		font-size: 0.875rem;
+		margin-bottom: 0.25rem;
+		font-weight: 500;
+	}
+
+	.info-value {
+		color: #212529;
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	/* Order Items Card */
+	.order-items-card {
+		border-radius: 1rem;
+		overflow: hidden;
+	}
+
+	.order-item-row {
+		transition: all 0.3s ease;
+		border-bottom: 1px solid #f0f0f0;
+	}
+
+	.order-item-row:hover {
+		background-color: rgba(13, 110, 253, 0.03);
+		transform: translateX(2px);
+	}
+
+	.table-total-row {
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		border-top: 2px solid #0d6efd;
+	}
+
+	/* Order Update Card */
+	.order-update-card {
+		border-radius: 1rem;
+	}
+
+	.current-status-section {
+		padding: 1rem;
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		border-radius: 0.75rem;
+		border: 2px solid #e9ecef;
+	}
+
+	.status-badge-display {
+		padding: 0.75rem 1.25rem;
+		border-radius: 0.5rem;
+		font-size: 1rem;
+		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.status-current-success {
+		background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+		color: white;
+	}
+
+	.status-current-danger {
+		background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+		color: white;
+	}
+
+	.status-current-warning {
+		background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+		color: #212529;
+	}
+
+	.divider-line {
+		height: 2px;
+		background: linear-gradient(90deg, transparent, #dee2e6, transparent);
+	}
+
+	.status-select {
+		border: 2px solid #e9ecef;
+		border-radius: 0.75rem;
+		transition: all 0.3s ease;
+	}
+
+	.status-select:focus {
+		border-color: #0d6efd;
+		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+	}
+
+	.shipping-address-input {
+		border: 2px solid #e9ecef;
+		border-radius: 0.75rem;
+		transition: all 0.3s ease;
+	}
+
+	.shipping-address-input:focus {
+		border-color: #0d6efd;
+		box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+	}
+
+	.payment-method-display {
+		padding: 0.5rem 0;
+	}
+
+	.order-summary-box {
+		padding: 1rem;
+		background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.1) 100%);
+		border-radius: 0.75rem;
+		border: 1px solid rgba(13, 110, 253, 0.2);
+	}
+
+	.update-order-btn {
+		transition: all 0.3s ease;
+		font-weight: 600;
+	}
+
+	.update-order-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+	}
+
+	/* Responsive adjustments */
+	@@media (max-width: 991.98px) {
+		.order-update-card {
+			position: static !important;
+			margin-top: 2rem;
+		}
+
+		.page-header-icon {
+			width: 50px;
+			height: 50px;
+			font-size: 1.5rem;
+		}
+	}
+
+	@@media (max-width: 767.98px) {
+		.info-item {
+			flex-direction: column;
+			text-align: center;
+		}
+
+		.info-icon-wrapper {
+			margin: 0 auto;
+		}
+	}
+
+	@@media (max-width: 575.98px) {
+		.page-header-icon {
+			width: 45px;
+			height: 45px;
+			font-size: 1.25rem;
+		}
+
+		.display-6 {
+			font-size: 1.5rem;
+		}
+
+		.order-info-card .card-body,
+		.order-update-card .card-body {
+			padding: 1.5rem;
+		}
+	}
+</style>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const form = document.getElementById('updateOrderForm');
+		const statusSelect = form?.querySelector('.status-select');
+		
+		if (statusSelect) {
+			statusSelect.addEventListener('change', function() {
+				// Visual feedback khi thay đổi status
+				const selectedOption = this.options[this.selectedIndex];
+				this.style.borderColor = '#0d6efd';
+			});
+		}
+
+		// Form submission loading state
+		if (form) {
+			form.addEventListener('submit', function() {
+				const submitBtn = this.querySelector('.update-order-btn');
+				if (submitBtn) {
+					submitBtn.disabled = true;
+					submitBtn.innerHTML = '<span class=" spinner-border spinner-border-sm me-2\></span>Đang cập nhật...';
+ }
+ });
+ }
+ });
+</script>

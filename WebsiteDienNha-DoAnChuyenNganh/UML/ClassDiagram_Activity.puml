@@ -1,0 +1,74 @@
+@startuml Class Diagram - Activity Model
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+' ============================================
+' Activity Model
+' ============================================
+class Activity {
+  - int Id
+  - string? UserId
+  - string ActivityType {MaxLength(100)}
+  - string? Description {MaxLength(500)}
+  - string? EntityType {MaxLength(100)}
+  - int? EntityId
+  - string? IpAddress {MaxLength(45)}
+  - string? UserAgent {MaxLength(500)}
+  - string? Url {MaxLength(500)}
+  - string? HttpMethod {MaxLength(10)}
+  - DateTime CreatedAt
+  - string? MetadataJson
+  --
+  + Activity()
+}
+
+' ============================================
+' ApplicationUser Model (Reference)
+' ============================================
+class ApplicationUser {
+  - string Id
+  - string UserName
+  - string Email
+  - string FullName
+  - string? AvatarUrl
+  - string? Address
+  - string? City
+  - string? District
+  - string? Ward
+  - int LoyaltyPoints
+  - int LoyaltyLevelId
+  --
+  + ApplicationUser()
+}
+
+' ============================================
+' Relationships
+' ============================================
+ApplicationUser "1" --> "0..*" Activity : "has activities"
+Activity "0..*" --> "0..1" ApplicationUser : "belongs to"
+
+note right of Activity
+  **Activity Model**
+  
+  Mô hình theo dõi hoạt động của người dùng:
+  - ActivityType: Loại hoạt động (ViewProduct, AddToCart, PlaceOrder, Login, etc.)
+  - EntityType: Loại entity bị ảnh hưởng (Product, Order, Cart, etc.)
+  - EntityId: ID của entity bị ảnh hưởng
+  - IpAddress: Địa chỉ IP của người dùng
+  - UserAgent: Thông tin trình duyệt
+  - Url: URL của request
+  - HttpMethod: Phương thức HTTP (GET, POST, PUT, DELETE)
+  - MetadataJson: Dữ liệu bổ sung dạng JSON
+end note
+
+note right of ApplicationUser
+  **ApplicationUser**
+  
+  Người dùng có thể có nhiều hoạt động.
+  Quan hệ: One-to-Many
+  DeleteBehavior: SetNull (khi xóa user, activity vẫn giữ lại nhưng UserId = null)
+end note
+
+@enduml
+

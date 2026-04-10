@@ -1,0 +1,200 @@
+@startuml ERD - Activity Model (Detailed)
+
+skinparam linetype ortho
+skinparam roundcorner 10
+skinparam shadowing false
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 9
+skinparam entity {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  BorderThickness 2
+}
+skinparam arrow {
+  Color #000000
+  Thickness 2
+}
+skinparam package {
+  BackgroundColor #F5F5F5
+  BorderColor #666666
+  BorderThickness 1
+}
+
+left to right direction
+
+' ============================================
+' User Management
+' ============================================
+entity "ApplicationUser\n(AspNetUsers)" as User {
+    * **Id** : nvarchar(450) <<PK>> <<NOT NULL>>
+    --
+    * UserName : nvarchar(256) <<NOT NULL>>
+    * NormalizedUserName : nvarchar(256)
+    * Email : nvarchar(256) <<NOT NULL>>
+    * NormalizedEmail : nvarchar(256)
+    * EmailConfirmed : bit <<NOT NULL>> <<DEFAULT 0>>
+    * PasswordHash : nvarchar(max)
+    * SecurityStamp : nvarchar(max)
+    * ConcurrencyStamp : nvarchar(max)
+    * PhoneNumber : nvarchar(max)
+    * PhoneNumberConfirmed : bit <<NOT NULL>> <<DEFAULT 0>>
+    * TwoFactorEnabled : bit <<NOT NULL>> <<DEFAULT 0>>
+    * LockoutEnd : datetimeoffset
+    * LockoutEnabled : bit <<NOT NULL>> <<DEFAULT 1>>
+    * AccessFailedCount : int <<NOT NULL>> <<DEFAULT 0>>
+    --
+    * FullName : nvarchar(100) <<NOT NULL>>
+    * AvatarUrl : nvarchar(250)
+    * Address : nvarchar(250)
+    * City : nvarchar(100)
+    * District : nvarchar(100)
+    * Ward : nvarchar(100)
+    * LoyaltyPoints : int <<NOT NULL>> <<DEFAULT 0>>
+    * LoyaltyLevelId : int <<FK>> <<NOT NULL>> <<DEFAULT 1>>
+    --
+    ..
+    **Indexes:**
+    * IX_AspNetUsers_UserName (UserName)
+    * IX_AspNetUsers_Email (Email)
+    * IX_AspNetUsers_LoyaltyLevelId (LoyaltyLevelId)
+}
+
+' ============================================
+' Activity Tracking
+' ============================================
+entity "Activity" as Activity {
+    * **Id** : int <<PK>> <<IDENTITY>> <<NOT NULL>>
+    --
+    * UserId : nvarchar(450) <<FK>> <<NULL>>
+    * ActivityType : nvarchar(100) <<NOT NULL>>
+    * Description : nvarchar(500) <<NULL>>
+    * EntityType : nvarchar(100) <<NULL>>
+    * EntityId : int <<NULL>>
+    * IpAddress : nvarchar(45) <<NULL>>
+    * UserAgent : nvarchar(500) <<NULL>>
+    * Url : nvarchar(500) <<NULL>>
+    * HttpMethod : nvarchar(10) <<NULL>>
+    * CreatedAt : datetime2 <<NOT NULL>> <<DEFAULT GETUTCDATE()>>
+    * MetadataJson : nvarchar(max) <<NULL>>
+    --
+    ..
+    **Indexes:**
+    * PK_Activity (Id) <<CLUSTERED>>
+    * IX_Activity_UserId (UserId)
+    * IX_Activity_ActivityType (ActivityType)
+    * IX_Activity_CreatedAt (CreatedAt)
+    * IX_Activity_EntityType_EntityId (EntityType, EntityId)
+    --
+    **Constraints:**
+    * FK_Activity_ApplicationUser_UserId
+      (UserId → ApplicationUser.Id)
+      ON DELETE SET NULL
+}
+
+' ============================================
+' Referenced Entities
+' ============================================
+entity "Product" as Product {
+    * **Id** : int <<PK>> <<IDENTITY>> <<NOT NULL>>
+    --
+    * Name : nvarchar(200) <<NOT NULL>>
+    * Slug : nvarchar(200)
+    * Description : nvarchar(4000)
+    * Price : decimal(18,2) <<NOT NULL>>
+    * PromotionPrice : decimal(18,2)
+    * Stock : int <<NOT NULL>> <<DEFAULT 0>>
+    * IsActive : bit <<NOT NULL>> <<DEFAULT 1>>
+    * ImageUrl : nvarchar(1000)
+    * CategoryId : int <<FK>> <<NOT NULL>>
+    * CreatedAt : datetime2 <<NOT NULL>> <<DEFAULT GETUTCDATE()>>
+    * UpdatedAt : datetime2
+    --
+    ..
+    **Indexes:**
+    * PK_Product (Id) <<CLUSTERED>>
+    * IX_Product_CategoryId (CategoryId)
+    * IX_Product_Slug (Slug)
+    --
+    **Constraints:**
+    * FK_Product_Category_CategoryId
+      (CategoryId → Category.Id)
+      ON DELETE RESTRICT
+}
+
+entity "Order" as Order {
+    * **Id** : int <<PK>> <<IDENTITY>> <<NOT NULL>>
+    --
+    * UserId : nvarchar(450) <<FK>> <<NOT NULL>>
+    * OrderDate : datetime2 <<NOT NULL>> <<DEFAULT GETUTCDATE()>>
+    * Status : nvarchar(50) <<NOT NULL>> <<DEFAULT 'Pending'>>
+    * Total : decimal(18,2) <<NOT NULL>>
+    * PaymentMethod : int <<NOT NULL>> <<DEFAULT 0>>
+    * ShippingAddress : nvarchar(500)
+    --
+    ..
+    **Indexes:**
+    * PK_Order (Id) <<CLUSTERED>>
+    * IX_Order_UserId (UserId)
+    * IX_Order_OrderDate (OrderDate)
+    * IX_Order_Status (Status)
+    --
+    **Constraints:**
+    * FK_Order_ApplicationUser_UserId
+      (UserId → ApplicationUser.Id)
+      ON DELETE RESTRICT
+  }
+  
+  entity "Cart" as Cart {
+    * **Id** : int <<PK>> <<IDENTITY>> <<NOT NULL>>
+    --
+    * UserId : nvarchar(450) <<FK>> <<NOT NULL>>
+    * CreatedAt : datetime2 <<NOT NULL>> <<DEFAULT GETUTCDATE()>>
+    * UpdatedAt : datetime2 <<NOT NULL>> <<DEFAULT GETUTCDATE()>>
+    --
+    ..
+    **Indexes:**
+    * PK_Cart (Id) <<CLUSTERED>>
+    * IX_Cart_UserId (UserId)
+    --
+    **Constraints:**
+    * FK_Cart_ApplicationUser_UserId
+      (UserId → ApplicationUser.Id)
+      ON DELETE CASCADE
+}
+
+' ============================================
+' Layout Spacing - Tách biệt các entity
+' ============================================
+User -[hidden]right- Activity
+Activity -[hidden]right- Product
+Product -[hidden]down- Order
+Order -[hidden]right- Cart
+
+' ============================================
+' Relationships
+' ============================================
+User ||--o{ Activity : "FK_Activity_ApplicationUser_UserId\nUserId (1:N)\nON DELETE SET NULL"
+
+Activity ..> Product : "Polymorphic\nEntityType='Product'\nEntityId → Product.Id"
+Activity ..> Order : "Polymorphic\nEntityType='Order'\nEntityId → Order.Id"
+Activity ..> Cart : "Polymorphic\nEntityType='Cart'\nEntityId → Cart.Id"
+
+' ============================================
+' Legend
+' ============================================
+legend right
+  |<#FFE6E6> **Legend** |
+  | **PK** = Primary Key |
+  | **FK** = Foreign Key |
+  | **IDENTITY** = Auto Increment |
+  | **NOT NULL** = Bắt buộc |
+  | **NULL** = Cho phép NULL |
+  | **DEFAULT** = Giá trị mặc định |
+  | **1:N** = One-to-Many |
+  | **--** = Direct FK Relationship |
+  | **..** = Polymorphic Reference |
+  | **CLUSTERED** = Clustered Index |
+endlegend
+
+@enduml
+

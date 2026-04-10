@@ -1,0 +1,1645 @@
+@model IEnumerable<WebsiteDienNha_DoAnChuyenNganh.Models.CartItem>
+@{
+	ViewData["Title"] = "Giỏ hàng";
+	var cartItems = ViewBag.CartItems as List<(WebsiteDienNha_DoAnChuyenNganh.Models.CartItem Item, WebsiteDienNha_DoAnChuyenNganh.Models.Product? Product)>;
+	var total = Model.Sum(i => i.UnitPrice * i.Quantity);
+	var viewBagCartTotal = ViewBag.CartTotal as decimal? ?? total;
+	var viewBagDiscountAmount = ViewBag.DiscountAmount as decimal? ?? 0;
+	var viewBagFinalTotal = ViewBag.FinalTotal as decimal? ?? total;
+	var viewBagAppliedCode = ViewBag.AppliedDiscountCode as string;
+	var hasDiscount = !string.IsNullOrEmpty(viewBagAppliedCode) && viewBagDiscountAmount > 0;
+}
+
+<div class="container my-4 my-md-5">
+	<!-- Page Header -->
+	<div class="row mb-4">
+		<div class="col-12">
+			<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+				<div>
+					<h1 class="fw-bold mb-2 display-6">
+						<i class="bi bi-cart-check me-2 text-primary"></i>Giỏ hàng của bạn
+					</h1>
+					<p class="text-muted mb-0">Quản lý sản phẩm trong giỏ hàng của bạn</p>
+				</div>
+				@if (Model.Any())
+				{
+					<div class="d-flex align-items-center gap-2">
+						<span class="badge bg-primary bg-gradient fs-6 px-3 py-2">
+							<i class="bi bi-box-seam me-1"></i>@Model.Count() sản phẩm
+						</span>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4">
+		<!-- Main Content -->
+		<div class="col-12 col-lg-8">
+
+			@if (!Model.Any())
+			{
+				<div class="card shadow-lg border-0 text-center py-5 empty-cart-card">
+					<div class="card-body py-5">
+						<div class="empty-cart-icon mb-4">
+							<i class="bi bi-cart-x"></i>
+						</div>
+						<h3 class="mt-4 mb-3 fw-bold">Giỏ hàng của bạn đang trống</h3>
+						<p class="text-muted mb-4 fs-5">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+						<a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg px-5 rounded-pill">
+							<i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm
+						</a>
+					</div>
+				</div>
+			}
+			else
+			{
+				<!-- Desktop Table View -->
+				<div class="card shadow-sm border-0 overflow-hidden d-none d-md-block cart-table-card">
+					<div class="card-header bg-white border-bottom py-3">
+						<h5 class="mb-0 fw-semibold">
+							<i class="bi bi-list-ul text-primary me-2"></i>Sản phẩm trong giỏ hàng
+						</h5>
+					</div>
+					<div class="card-body p-0">
+						<div class="table-responsive">
+							<table class="table table-hover align-middle mb-0">
+								<thead class="table-light">
+									<tr>
+										<th style="width: 40%;" class="ps-4">Sản phẩm</th>
+										<th class="text-center" style="width: 20%;">Số lượng</th>
+										<th class="text-end" style="width: 15%;">Đơn giá</th>
+										<th class="text-end" style="width: 15%;">Thành tiền</th>
+										<th class="text-center pe-4" style="width: 10%;"></th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var tuple in cartItems ?? new List<(WebsiteDienNha_DoAnChuyenNganh.Models.CartItem, WebsiteDienNha_DoAnChuyenNganh.Models.Product?)>())
+									{
+										var item = tuple.Item;
+										var product = tuple.Product;
+										<tr class="cart-item-row">
+											<td class="ps-4">
+												<div class="d-flex align-items-center">
+													@if (product != null && !string.IsNullOrEmpty(product.ImageUrl))
+													{
+														<div class="product-image-wrapper me-3">
+															<img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+														</div>
+													}
+													else
+													{
+														<div class="product-image-placeholder me-3">
+															<i class="bi bi-image"></i>
+														</div>
+													}
+													<div class="flex-grow-1">
+														@if (product != null)
+														{
+															<strong class="d-block mb-1 product-name">@product.Name</strong>
+															<a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="text-decoration-none small text-primary product-link">
+																<i class="bi bi-arrow-right me-1"></i>Xem chi tiết
+															</a>
+														}
+														else
+														{
+															<span class="text-muted">Sản phẩm #@item.ProductId</span>
+														}
+													</div>
+												</div>
+											</td>
+											<td>
+												<form asp-action="Update" method="post" class="quantity-form d-flex justify-content-center align-items-center">
+													<input type="hidden" name="productId" value="@item.ProductId" />
+													<div class="quantity-controls">
+														<button type="button" class="quantity-btn quantity-decrease" data-product-id="@item.ProductId" title="Giảm số lượng">
+															<i class="bi bi-dash-lg"></i>
+														</button>
+														<input type="number" name="quantity" value="@item.Quantity" min="1" 
+														       class="quantity-input text-center" 
+														       data-product-id="@item.ProductId" 
+														       data-unit-price="@item.UnitPrice" />
+														<button type="button" class="quantity-btn quantity-increase" data-product-id="@item.ProductId" title="Tăng số lượng">
+															<i class="bi bi-plus-lg"></i>
+														</button>
+														<button type="submit" class="d-none" title="Cập nhật">
+															<i class="bi bi-check"></i>
+														</button>
+													</div>
+												</form>
+											</td>
+											<td class="text-end">
+												<span class="text-muted small d-block mb-1">Đơn giá</span>
+												<strong class="unit-price">@item.UnitPrice.ToString("N0") đ</strong>
+											</td>
+											<td class="text-end">
+												<span class="text-muted small d-block mb-1">Thành tiền</span>
+												<strong class="text-primary fs-5 fw-bold item-total" data-product-id="@item.ProductId">
+													@((item.UnitPrice * item.Quantity).ToString("N0")) đ
+												</strong>
+											</td>
+											<td class="text-center pe-4">
+												<form asp-action="Remove" method="post" class="d-inline">
+													<input type="hidden" name="productId" value="@item.ProductId" />
+													<button type="submit" class="btn btn-sm btn-danger btn-remove rounded-circle" onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')" title="Xóa sản phẩm">
+														<i class="bi bi-trash"></i>
+													</button>
+												</form>
+											</td>
+										</tr>
+									}
+								</tbody>
+								<tfoot>
+									<tr class="table-total-row">
+										<td colspan="3" class="text-end ps-4 py-4">
+											<span class="fs-5 fw-semibold">Tổng cộng:</span>
+										</td>
+										<td class="text-end py-4">
+											<span class="fs-3 fw-bold text-primary" id="cart-total">@(viewBagFinalTotal.ToString("N0")) đ</span>
+										</td>
+										<td class="pe-4"></td>
+									</tr>
+								</tfoot>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- Mobile Card View -->
+				<div class="d-md-none">
+					@foreach (var tuple in cartItems ?? new List<(WebsiteDienNha_DoAnChuyenNganh.Models.CartItem, WebsiteDienNha_DoAnChuyenNganh.Models.Product?)>())
+					{
+						var item = tuple.Item;
+						var product = tuple.Product;
+						<div class="card shadow-sm border-0 mb-3 cart-mobile-card">
+							<div class="card-body p-3">
+								<div class="d-flex align-items-start mb-3">
+									@if (product != null && !string.IsNullOrEmpty(product.ImageUrl))
+									{
+										<div class="product-image-wrapper me-3">
+											<img src="@product.ImageUrl" alt="@product.Name" class="product-image">
+										</div>
+									}
+									else
+									{
+										<div class="product-image-placeholder me-3">
+											<i class="bi bi-image"></i>
+										</div>
+									}
+									<div class="flex-grow-1">
+										@if (product != null)
+										{
+											<h6 class="fw-bold mb-1 product-name">@product.Name</h6>
+											<a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="text-decoration-none small text-primary product-link">
+												Xem chi tiết <i class="bi bi-arrow-right"></i>
+											</a>
+										}
+										else
+										{
+											<span class="text-muted">Sản phẩm #@item.ProductId</span>
+										}
+									</div>
+									<form asp-action="Remove" method="post" class="d-inline">
+										<input type="hidden" name="productId" value="@item.ProductId" />
+										<button type="submit" class="btn btn-sm btn-danger btn-remove rounded-circle" onclick="return confirm('Xóa sản phẩm?')" title="Xóa">
+											<i class="bi bi-trash"></i>
+										</button>
+									</form>
+								</div>
+								<hr class="my-3">
+								<div class="row g-3">
+									<div class="col-6">
+										<label class="form-label small text-muted mb-1">Đơn giá</label>
+										<p class="mb-0 fw-bold unit-price">@item.UnitPrice.ToString("N0") đ</p>
+									</div>
+									<div class="col-6 text-end">
+										<label class="form-label small text-muted mb-1">Thành tiền</label>
+										<p class="mb-0 fw-bold text-primary fs-5 item-total" data-product-id="@item.ProductId">
+											@((item.UnitPrice * item.Quantity).ToString("N0")) đ
+										</p>
+									</div>
+									<div class="col-12">
+										<form asp-action="Update" method="post" class="quantity-form">
+											<input type="hidden" name="productId" value="@item.ProductId" />
+											<label class="form-label small text-muted mb-2 fw-semibold">Số lượng</label>
+											<div class="quantity-controls">
+												<button type="button" class="quantity-btn quantity-decrease" data-product-id="@item.ProductId">
+													<i class="bi bi-dash-lg"></i>
+												</button>
+												<input type="number" name="quantity" value="@item.Quantity" min="1" 
+												       class="quantity-input text-center" 
+												       data-product-id="@item.ProductId" 
+												       data-unit-price="@item.UnitPrice" />
+												<button type="button" class="quantity-btn quantity-increase" data-product-id="@item.ProductId">
+													<i class="bi bi-plus-lg"></i>
+												</button>
+												<button type="submit" class="d-none">
+													<i class="bi bi-check me-1"></i>Cập nhật
+												</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+
+				<!-- Action Buttons -->
+				<div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
+					<a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary btn-lg order-2 order-md-1 rounded-pill">
+						<i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm
+					</a>
+					<div class="d-flex flex-column flex-sm-row gap-2 order-1 order-md-2 w-100 w-md-auto">
+						<form asp-action="Clear" method="post" class="d-inline flex-fill">
+							<button type="submit" class="btn btn-warning btn-lg w-100 rounded-pill" onclick="return confirm('Bạn có chắc muốn xóa tất cả sản phẩm?')">
+								<i class="bi bi-x-circle me-2"></i>Xóa giỏ hàng
+							</button>
+						</form>
+						<a asp-action="Checkout" class="btn btn-primary btn-lg w-100 flex-fill rounded-pill">
+							<i class="bi bi-cart-check me-2"></i>Thanh toán
+						</a>
+					</div>
+				</div>
+			}
+		</div>
+
+		<!-- Summary Sidebar -->
+		@if (Model.Any())
+		{
+			<div class="col-12 col-lg-4">
+				<div class="card shadow-lg border-0 sticky-top summary-card" style="top: calc(50px + 148px + 50px + 30px); z-index: 998;">
+					<div class="card-header bg-primary bg-gradient text-white py-3">
+						<h5 class="mb-0 fw-semibold">
+							<i class="bi bi-receipt-cutoff me-2"></i>Tóm tắt đơn hàng
+						</h5>
+					</div>
+					<div class="card-body">
+						<!-- Discount Code Section -->
+						<div class="discount-code-section mb-4">
+							<div class="discount-code-header">
+								<i class="bi bi-ticket-perforated me-2"></i>
+								<span class="fw-semibold">Mã giảm giá</span>
+							</div>
+							@{
+								var appliedDiscountPercent = ViewBag.DiscountPercent as decimal?;
+								var appliedDiscountFixed = ViewBag.DiscountFixed as decimal?;
+							}
+							<div id="discountCodeForm" class="discount-code-form" style="@(hasDiscount ? "display: none;" : "")">
+								<div class="input-group discount-input-group">
+									<input type="text" class="form-control discount-code-input" id="discountCodeInput" 
+									       placeholder="Nhập mã giảm giá" maxlength="50" value="@(hasDiscount ? viewBagAppliedCode : "")">
+									<button class="btn discount-apply-btn" type="button" id="applyDiscountBtn" 
+									        onclick="event.preventDefault(); event.stopPropagation(); if(typeof handleApplyDiscount === 'function') handleApplyDiscount(); else console.log('handleApplyDiscount not found'); return false;"
+									        style="z-index: 10; position: relative; pointer-events: auto !important; cursor: pointer !important;">
+										<i class="bi bi-check-lg"></i>
+									</button>
+								</div>
+								<small class="text-muted d-block mt-2">
+									<i class="bi bi-info-circle me-1"></i>Nhập mã và nhấn áp dụng
+								</small>
+							</div>
+							<div id="discountCodeApplied" class="discount-applied" style="@(hasDiscount ? "" : "display: none;")">
+								<div class="discount-applied-info">
+									<div class="d-flex align-items-center justify-content-between mb-2">
+										<span class="discount-code-badge">
+											<i class="bi bi-ticket-perforated me-1"></i>
+											<span id="appliedCodeText">@(viewBagAppliedCode ?? "")</span>
+										</span>
+										<button class="btn btn-sm btn-link text-danger p-0 remove-discount-btn" id="removeDiscountBtn" type="button">
+											<i class="bi bi-x-lg"></i>
+										</button>
+									</div>
+									<div class="discount-amount-display">
+										<span class="text-success fw-bold" id="discountAmountDisplay">
+											@if (hasDiscount)
+											{
+												if (appliedDiscountPercent.HasValue)
+												{
+													<text>-@(appliedDiscountPercent.Value)% (@(viewBagDiscountAmount.ToString("N0")) đ)</text>
+												}
+												else
+												{
+													<text>-@(viewBagDiscountAmount.ToString("N0")) đ</text>
+												}
+											}
+										</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Danh sách mã giảm giá đang còn hiệu lực - Hiển thị tự động khi vượt giá tối thiểu -->
+							@{
+								var availableCodes = ViewBag.AvailableDiscountCodes as List<WebsiteDienNha_DoAnChuyenNganh.Models.DiscountCode>;
+								var hasAvailableCodes = availableCodes != null && availableCodes.Any();
+							}
+							<div id="availableDiscountCodesContainer" class="mt-3" style="@(hasAvailableCodes ? "display: block;" : "display: none;")">
+								<div class="alert alert-success border-0 shadow-sm mb-0" style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left: 4px solid #28a745 !important;">
+									<div class="d-flex align-items-start">
+										<div class="flex-grow-1">
+											<div class="d-flex align-items-center mb-2">
+												<i class="bi bi-gift-fill me-2 fs-5 text-success"></i>
+												<h6 class="mb-0 fw-bold text-success">🎉 Mã giảm giá khả dụng!</h6>
+											</div>
+											<div id="availableDiscountCodesList" class="list-group list-group-flush bg-transparent">
+												@if (hasAvailableCodes)
+												{
+													@foreach (var code in availableCodes)
+													{
+														var daysRemaining = (code.EndDate - DateTime.UtcNow).Days;
+														var discountText = "";
+														if (code.DiscountPercent.HasValue)
+														{
+															discountText = $"Giảm {code.DiscountPercent.Value}%";
+														}
+														else if (code.DiscountAmount.HasValue)
+														{
+															discountText = $"Giảm {code.DiscountAmount.Value.ToString("N0")} đ";
+														}
+														var estimatedSavings = 0m;
+														if (code.DiscountPercent.HasValue && viewBagCartTotal > 0)
+														{
+															estimatedSavings = viewBagCartTotal * code.DiscountPercent.Value / 100;
+														}
+														else if (code.DiscountAmount.HasValue)
+														{
+															estimatedSavings = code.DiscountAmount.Value;
+														}
+														
+														<div class="list-group-item border-0 px-0 py-2 mb-2 bg-transparent">
+															<div class="d-flex justify-content-between align-items-start">
+																<div class="flex-grow-1">
+																	<div class="d-flex align-items-center mb-1 flex-wrap gap-2">
+																		<strong class="text-primary fs-6">@code.Code</strong>
+																		<span class="badge bg-success">@discountText</span>
+																		@if (estimatedSavings > 0)
+																		{
+																			<span class="badge bg-warning text-dark">
+																				<i class="bi bi-piggy-bank me-1"></i>Tiết kiệm @estimatedSavings.ToString("N0") đ
+																			</span>
+																		}
+																	</div>
+																	@if (!string.IsNullOrEmpty(code.Description))
+																	{
+																		<small class="text-muted d-block mb-1">@code.Description</small>
+																	}
+																	@if (code.MinimumOrderAmount.HasValue)
+																	{
+																		<small class="text-muted d-block">
+																			<i class="bi bi-info-circle me-1"></i>Áp dụng cho đơn từ @code.MinimumOrderAmount.Value.ToString("N0") đ
+																		</small>
+																	}
+																	<small class="text-muted d-block mt-1">
+																		<i class="bi bi-clock me-1"></i>
+																		@if (daysRemaining > 0)
+																		{
+																			<span class="text-success">Còn @daysRemaining ngày</span>
+																		}
+																		else
+																		{
+																			<span class="text-warning">Hết hạn hôm nay</span>
+																		}
+																		<span class="ms-2">(@code.EndDate.ToString("dd/MM/yyyy"))</span>
+																	</small>
+																</div>
+																<button type="button" class="btn btn-sm btn-primary ms-2" onclick="applyDiscountCodeQuick('@code.Code')" title="Áp dụng mã">
+																	<i class="bi bi-check-lg me-1"></i>Áp dụng
+																</button>
+															</div>
+														</div>
+													}
+												}
+											</div>
+										</div>
+										<button type="button" class="btn-close" onclick="document.getElementById('availableDiscountCodesContainer').style.display='none';" aria-label="Đóng"></button>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="summary-item">
+							<span class="summary-label">Số loại sản phẩm:</span>
+							<strong class="summary-value">@Model.Count()</strong>
+						</div>
+						<div class="summary-item">
+							<span class="summary-label">Tổng số lượng:</span>
+							<strong class="summary-value">@Model.Sum(i => i.Quantity) sản phẩm</strong>
+						</div>
+						<div class="summary-divider"></div>
+						@if (hasDiscount)
+						{
+							<div class="summary-item" id="discountSummaryItem" style="display: flex;">
+								<span class="summary-label text-success">
+									<i class="bi bi-ticket-perforated me-1"></i>Giảm giá (@viewBagAppliedCode):
+								</span>
+								<strong class="summary-value text-success" id="discountSummaryAmount">-@(viewBagDiscountAmount.ToString("N0")) đ</strong>
+							</div>
+						}
+						else
+						{
+							<div class="summary-item" id="discountSummaryItem" style="display: none;">
+								<span class="summary-label text-success">
+									<i class="bi bi-ticket-perforated me-1"></i>Giảm giá:
+								</span>
+								<strong class="summary-value text-success" id="discountSummaryAmount">0 đ</strong>
+							</div>
+						}
+						<div class="summary-total">
+							<span class="summary-total-label">Tổng cộng:</span>
+							<h3 class="summary-total-amount mb-0 text-primary fw-bold" id="summary-total">@(viewBagFinalTotal.ToString("N0")) đ</h3>
+						</div>
+						<a asp-action="Checkout" class="btn btn-primary btn-lg w-100 rounded-pill mt-4 shadow-sm">
+							<i class="bi bi-cart-check me-2"></i>Tiến hành thanh toán
+						</a>
+						<div class="mt-3">
+							<a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary w-100 rounded-pill">
+								<i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm
+							</a>
+						</div>
+						<div class="alert alert-info small mt-4 mb-0 rounded-pill border-0 shadow-sm">
+							<i class="bi bi-truck me-2"></i>
+							<strong>Miễn phí vận chuyển</strong> cho đơn hàng trên 500.000 đ
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+</div>
+
+<style>
+	/* General Styles */
+	.empty-cart-card {
+		border-radius: 1rem;
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+	}
+	
+	.empty-cart-icon {
+		font-size: 8rem;
+		color: #dee2e6;
+		animation: float 3s ease-in-out infinite;
+	}
+	
+	@@keyframes float {
+		0%, 100% { transform: translateY(0px); }
+		50% { transform: translateY(-20px); }
+	}
+	
+	/* Cart Table Styles */
+	.cart-table-card {
+		border-radius: 1rem;
+		overflow: hidden;
+	}
+	
+	.cart-item-row {
+		transition: all 0.3s ease;
+		border-bottom: 1px solid #f0f0f0;
+	}
+	
+	.cart-item-row:hover {
+		background-color: rgba(13, 110, 253, 0.03);
+		transform: translateX(2px);
+	}
+	
+	.table-total-row {
+		background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+		border-top: 2px solid #0d6efd;
+	}
+	
+	/* Product Image Styles */
+	.product-image-wrapper {
+		width: 80px;
+		height: 80px;
+		border-radius: 0.75rem;
+		overflow: hidden;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+		transition: transform 0.3s ease;
+	}
+	
+	.product-image-wrapper:hover {
+		transform: scale(1.05);
+	}
+	
+	.product-image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	
+	.product-image-placeholder {
+		width: 80px;
+		height: 80px;
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		border-radius: 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #adb5bd;
+		font-size: 1.5rem;
+	}
+	
+	.product-name {
+		color: #212529;
+		font-size: 1rem;
+		line-height: 1.4;
+	}
+	
+	.product-link {
+		transition: all 0.2s ease;
+	}
+	
+	.product-link:hover {
+		color: #0d6efd !important;
+		transform: translateX(3px);
+	}
+	
+	/* Quantity Controls */
+	.quantity-controls {
+		display: flex;
+		align-items: center;
+		gap: 0;
+		background: #fff;
+		border: 2px solid #dee2e6;
+		border-radius: 0.5rem;
+		overflow: hidden;
+		width: fit-content;
+	}
+	
+	.quantity-btn {
+		width: 40px;
+		height: 40px;
+		border: none;
+		background: #f8f9fa;
+		color: #495057;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+		cursor: pointer;
+	}
+	
+	.quantity-btn:hover:not(:disabled) {
+		background: #0d6efd;
+		color: #fff;
+		transform: scale(1.1);
+	}
+	
+	.quantity-btn:active {
+		transform: scale(0.95);
+	}
+	
+	.quantity-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	
+	.quantity-input {
+		width: 70px;
+		height: 40px;
+		border: none;
+		border-left: 2px solid #dee2e6;
+		border-right: 2px solid #dee2e6;
+		text-align: center;
+		font-weight: 600;
+		font-size: 1rem;
+	}
+	
+	.quantity-input:focus {
+		outline: none;
+		box-shadow: inset 0 0 0 2px rgba(13, 110, 253, 0.25);
+	}
+	
+	/* Remove Button */
+	.btn-remove {
+		width: 36px;
+		height: 36px;
+		transition: all 0.2s ease;
+	}
+	
+	.btn-remove:hover {
+		transform: scale(1.1) rotate(5deg);
+		box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+	}
+	
+	/* Summary Card */
+	.summary-card {
+		border-radius: 1rem;
+		z-index: 998; /* Thấp hơn header (1000) nhưng cao hơn content */
+	}
+	
+	.summary-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 0;
+		border-bottom: 1px solid #f0f0f0;
+	}
+	
+	.summary-label {
+		color: #6c757d;
+		font-size: 0.95rem;
+	}
+	
+	.summary-value {
+		color: #212529;
+		font-size: 1rem;
+	}
+	
+	.summary-divider {
+		height: 1px;
+		background: linear-gradient(90deg, transparent, #dee2e6, transparent);
+		margin: 1rem 0;
+	}
+	
+	.summary-total {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		background: linear-gradient(135deg, rgba(13, 110, 253, 0.05) 0%, rgba(13, 110, 253, 0.1) 100%);
+		border-radius: 0.75rem;
+		margin-top: 1rem;
+	}
+	
+	.summary-total-label {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: #212529;
+	}
+	
+	.summary-total-amount {
+		font-size: 1.75rem;
+	}
+
+	/* Discount Code Styles */
+	.discount-code-section {
+		background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+		border-radius: 1rem;
+		padding: 1.25rem;
+		border: 2px solid rgba(102, 126, 234, 0.1);
+		transition: all 0.3s ease;
+		margin-bottom: 1.5rem;
+	}
+
+	.discount-code-section:hover {
+		border-color: rgba(102, 126, 234, 0.3);
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+	}
+
+	.discount-code-header {
+		color: #667eea;
+		font-size: 0.95rem;
+		margin-bottom: 0.75rem;
+		display: flex;
+		align-items: center;
+	}
+
+	.discount-code-header i {
+		font-size: 1.2rem;
+	}
+
+	.discount-input-group {
+		position: relative;
+		border-radius: 0.75rem;
+		overflow: hidden;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+	}
+
+	.discount-code-input {
+		border: 2px solid #e9ecef;
+		border-right: none;
+		border-radius: 0.75rem 0 0 0.75rem;
+		padding: 0.75rem 1rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		transition: all 0.3s ease;
+	}
+
+	.discount-code-input:focus {
+		border-color: #667eea;
+		box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15);
+		outline: none;
+	}
+
+	.discount-apply-btn {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+		border: 2px solid #667eea !important;
+		border-left: none !important;
+		border-radius: 0 0.75rem 0.75rem 0 !important;
+		color: white !important;
+		padding: 0.75rem 1.25rem !important;
+		font-weight: 600 !important;
+		transition: all 0.3s ease !important;
+		cursor: pointer !important;
+		z-index: 10 !important;
+		position: relative !important;
+		pointer-events: auto !important;
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+	}
+
+	.discount-apply-btn:hover {
+		background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+		transform: scale(1.05);
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+	}
+
+	.discount-apply-btn:active {
+		transform: scale(0.98);
+	}
+
+	.discount-apply-btn:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+		transform: none;
+	}
+
+	.discount-applied {
+		background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+		border: 2px solid rgba(25, 135, 84, 0.3);
+		border-radius: 0.75rem;
+		padding: 1rem;
+		animation: slideDown 0.3s ease-out;
+	}
+
+	.discount-code-badge {
+		background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+		color: white;
+		padding: 0.5rem 1rem;
+		border-radius: 50px;
+		font-weight: 600;
+		font-size: 0.9rem;
+		display: inline-flex;
+		align-items: center;
+		box-shadow: 0 2px 8px rgba(25, 135, 84, 0.3);
+	}
+
+	.discount-amount-display {
+		margin-top: 0.5rem;
+		font-size: 1.1rem;
+	}
+
+	.remove-discount-btn {
+		color: #dc3545 !important;
+		transition: all 0.3s ease;
+		text-decoration: none;
+	}
+
+	.remove-discount-btn:hover {
+		transform: scale(1.2) rotate(90deg);
+		color: #c82333 !important;
+	}
+
+	/* Available Discount Codes List */
+	.available-discount-codes {
+		border-top: 1px solid rgba(102, 126, 234, 0.2);
+		padding-top: 1rem;
+	}
+
+	.available-discount-codes .btn-link {
+		font-size: 0.875rem;
+		transition: all 0.3s ease;
+	}
+
+	.available-discount-codes .btn-link:hover {
+		text-decoration: underline !important;
+	}
+
+	.available-discount-codes .list-group-item {
+		background: rgba(255, 255, 255, 0.8);
+		border-radius: 0.5rem;
+		margin-bottom: 0.5rem;
+		transition: all 0.3s ease;
+		border: 1px solid rgba(102, 126, 234, 0.1) !important;
+	}
+
+	.available-discount-codes .list-group-item:hover {
+		background: rgba(102, 126, 234, 0.05);
+		border-color: rgba(102, 126, 234, 0.3) !important;
+		transform: translateX(3px);
+		box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+	}
+
+	.available-discount-codes .badge {
+		font-size: 0.75rem;
+		padding: 0.35rem 0.65rem;
+	}
+
+	@@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	
+	@@keyframes slideInLeft {
+		from {
+			opacity: 0;
+			transform: translateX(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+	
+	/* Available Discount Codes Container - Auto Display */
+	#availableDiscountCodesContainer {
+		animation: slideDown 0.4s ease-out;
+	}
+	
+	#availableDiscountCodesContainer .alert {
+		border-radius: 0.75rem;
+		transition: all 0.3s ease;
+	}
+	
+	#availableDiscountCodesContainer .alert:hover {
+		box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+		transform: translateY(-2px);
+	}
+	
+	/* Mobile Card Styles */
+	.cart-mobile-card {
+		border-radius: 1rem;
+		transition: all 0.3s ease;
+	}
+	
+	.cart-mobile-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+	}
+	
+	/* Responsive Adjustments */
+	@@media (max-width: 767.98px) {
+		.product-image-wrapper,
+		.product-image-placeholder {
+			width: 70px;
+			height: 70px;
+		}
+		
+		.quantity-controls {
+			width: 100%;
+		}
+		
+		.quantity-btn {
+			width: 45px;
+			height: 45px;
+		}
+		
+		.quantity-input {
+			width: 100%;
+			flex: 1;
+		}
+		
+		.summary-card {
+			position: static !important;
+			margin-top: 1rem;
+			top: auto !important;
+		}
+	}
+	
+	@@media (min-width: 768px) and (max-width: 991.98px) {
+		.product-image-wrapper,
+		.product-image-placeholder {
+			width: 70px;
+			height: 70px;
+		}
+	}
+	
+	/* Loading States */
+	.quantity-btn.loading {
+		opacity: 0.6;
+		pointer-events: none;
+	}
+	
+	/* Animations */
+	@@keyframes slideIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	
+	.cart-item-row,
+	.cart-mobile-card {
+		animation: slideIn 0.3s ease-out;
+	}
+</style>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		let isUpdating = false;
+		let updateQueue = new Set();
+		
+		// Initialize: Check discount codes on page load
+		setTimeout(() => {
+			const initialTotal = parseFloat(document.getElementById('summary-total')?.textContent?.replace(/[^\d.]/g, '') || '0');
+			if (initialTotal > 0) {
+				checkAvailableDiscountCodes(initialTotal);
+			}
+		}, 1000);
+		
+		// Function to parse unit price correctly
+		function parseUnitPrice(unitPriceStr) {
+			if (!unitPriceStr) return 0;
+			// Remove any formatting (commas, spaces, currency symbols)
+			const cleaned = String(unitPriceStr).replace(/[^\d.]/g, '');
+			return parseFloat(cleaned) || 0;
+		}
+		
+		// Function to update totals (client-side only, for immediate feedback)
+		function updateTotals() {
+			if (isUpdating) return; // Prevent updates during server update
+			
+			let total = 0;
+			const inputs = document.querySelectorAll('.quantity-input');
+			
+			inputs.forEach(input => {
+				const productId = input.dataset.productId;
+				// Parse unit price correctly
+				const unitPriceStr = input.dataset.unitPrice || '0';
+				const unitPrice = parseUnitPrice(unitPriceStr);
+				const quantity = parseInt(input.value) || 1;
+				
+				// Ensure quantity is at least 1
+				if (quantity < 1) {
+					input.value = 1;
+					return;
+				}
+				
+				const itemTotal = unitPrice * quantity;
+				
+				// Update item total
+				const itemTotalElement = document.querySelector(`.item-total[data-product-id="${productId}"]`);
+				if (itemTotalElement) {
+					itemTotalElement.textContent = Math.round(itemTotal).toLocaleString('vi-VN') + ' đ';
+				}
+				
+				total += itemTotal;
+			});
+			
+			// Update cart total
+			const cartTotalElement = document.getElementById('cart-total');
+			if (cartTotalElement) {
+				cartTotalElement.textContent = Math.round(total).toLocaleString('vi-VN') + ' đ';
+			}
+			
+			// Update summary total
+			const summaryTotalElement = document.getElementById('summary-total');
+			if (summaryTotalElement) {
+				summaryTotalElement.textContent = Math.round(total).toLocaleString('vi-VN') + ' đ';
+			}
+			
+			// Check for new available discount codes when total changes (real-time)
+			checkAvailableDiscountCodes(total);
+		}
+		
+		// Function to check available discount codes based on cart total (real-time)
+		let lastCheckedTotal = 0;
+		let shownDiscountCodes = new Set(); // Track which codes we've already shown
+		let checkTimeout = null;
+		
+		function checkAvailableDiscountCodes(cartTotal) {
+			// Debounce: Chỉ check sau 500ms khi người dùng ngừng thay đổi
+			if (checkTimeout) {
+				clearTimeout(checkTimeout);
+			}
+			
+			checkTimeout = setTimeout(() => {
+				// Chỉ check nếu tổng tiền thay đổi đáng kể (ít nhất 500đ) để tránh spam
+				if (Math.abs(cartTotal - lastCheckedTotal) < 500 && lastCheckedTotal > 0) {
+					return;
+				}
+				
+				lastCheckedTotal = cartTotal;
+			
+			// Gọi API để lấy danh sách mã giảm giá phù hợp
+			fetch('@Url.Action("GetAvailableDiscountCodes", "ShoppingCart", new { area = "Customer" })?cartTotal=' + cartTotal, {
+				method: 'GET',
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data && data.success && data.hasNewCodes && data.availableCodes && data.availableCodes.length > 0) {
+					// Lọc ra các mã chưa được hiển thị
+					const newCodes = data.availableCodes.filter(code => !shownDiscountCodes.has(code.Id));
+					
+					if (newCodes.length > 0) {
+						// Đánh dấu các mã đã hiển thị
+						newCodes.forEach(code => shownDiscountCodes.add(code.Id));
+						
+						// Hiển thị notification cho mã tốt nhất
+						const bestCode = newCodes.reduce((best, current) => {
+							return (current.EstimatedSavings || 0) > (best.EstimatedSavings || 0) ? current : best;
+						}, newCodes[0]);
+						
+						// Delay một chút để tránh spam khi người dùng đang thay đổi số lượng
+						setTimeout(() => {
+							showNewDiscountCodeNotification(bestCode, cartTotal);
+						}, 800);
+					}
+					
+					// Cập nhật danh sách mã giảm giá available trong UI
+					updateAvailableDiscountCodesList(data.availableCodes);
+				}
+			})
+			.catch(error => {
+				console.error('Error checking discount codes:', error);
+			});
+			}, 500); // Debounce 500ms
+		}
+		
+		// Function to update available discount codes list in UI - Tự động hiển thị khi có mã khả dụng
+		function updateAvailableDiscountCodesList(codes) {
+			const container = document.getElementById('availableDiscountCodesContainer');
+			if (!container) return;
+			
+			const listGroup = document.getElementById('availableDiscountCodesList');
+			if (!listGroup) return;
+			
+			// Clear existing items
+			listGroup.innerHTML = '';
+			
+			// Nếu có mã giảm giá khả dụng, hiển thị container với animation
+			if (codes && codes.length > 0) {
+				// Add new codes
+				codes.forEach((code, index) => {
+					let daysRemaining = 0;
+					if (code.EndDate) {
+						const endDate = new Date(code.EndDate);
+						const now = new Date();
+						daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+					}
+					
+					const savings = code.EstimatedSavings || 0;
+					const item = document.createElement('div');
+					item.className = 'list-group-item border-0 px-0 py-2 mb-2 bg-transparent';
+					item.style.cssText = 'animation: slideInLeft 0.4s ease-out ' + (index * 0.1) + 's both;';
+					item.innerHTML = `
+						<div class="d-flex justify-content-between align-items-start">
+							<div class="flex-grow-1">
+								<div class="d-flex align-items-center mb-1 flex-wrap gap-2">
+									<strong class="text-primary fs-6">${code.Code || ''}</strong>
+									<span class="badge bg-success">${code.DiscountText || ''}</span>
+									${savings > 0 ? `<span class="badge bg-warning text-dark"><i class="bi bi-piggy-bank me-1"></i>Tiết kiệm ${Math.round(savings).toLocaleString('vi-VN')} đ</span>` : ''}
+								</div>
+								${code.Description ? `<small class="text-muted d-block mb-1">${code.Description}</small>` : ''}
+								${code.MinimumOrderAmount ? `<small class="text-muted d-block"><i class="bi bi-info-circle me-1"></i>Áp dụng cho đơn từ ${parseFloat(code.MinimumOrderAmount).toLocaleString('vi-VN')} đ</small>` : ''}
+								${code.EndDate ? `<small class="text-muted d-block mt-1">
+									<i class="bi bi-clock me-1"></i>
+									${daysRemaining > 0 ? `<span class="text-success">Còn ${daysRemaining} ngày</span>` : '<span class="text-warning">Hết hạn hôm nay</span>'}
+									<span class="ms-2">(${new Date(code.EndDate).toLocaleDateString('vi-VN')})</span>
+								</small>` : ''}
+							</div>
+							<button type="button" class="btn btn-sm btn-primary ms-2" onclick="applyDiscountCodeQuick('${code.Code || ''}')" title="Áp dụng mã">
+								<i class="bi bi-check-lg me-1"></i>Áp dụng
+							</button>
+						</div>
+					`;
+					listGroup.appendChild(item);
+				});
+				
+				// Hiển thị container với animation
+				if (container.style.display === 'none' || !container.style.display) {
+					container.style.display = 'block';
+					container.style.animation = 'slideDown 0.4s ease-out';
+				}
+			} else {
+				// Ẩn container nếu không có mã nào
+				container.style.display = 'none';
+			}
+		}
+		
+		// Function to show notification when new discount code becomes available
+		function showNewDiscountCodeNotification(code, cartTotal) {
+			if (!code || !code.Code) return;
+			
+			// Kiểm tra xem đã hiển thị mã này chưa
+			if (shownDiscountCodes.has(code.Id)) {
+				return;
+			}
+			
+			const savings = code.EstimatedSavings || 0;
+			const discountText = code.DiscountText || '';
+			
+			// Tạo notification popup
+			const alert = document.createElement('div');
+			alert.className = 'alert alert-info alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg';
+			alert.style.cssText = 'z-index: 10000; min-width: 400px; max-width: 500px; border-left: 4px solid #0dcaf0; animation: slideDown 0.3s ease-out;';
+			alert.innerHTML = `
+				<div class="d-flex align-items-start">
+					<i class="bi bi-gift-fill me-2 fs-4 text-info"></i>
+					<div class="flex-grow-1">
+						<h6 class="alert-heading mb-2 fw-bold">🎉 Mã giảm giá mới!</h6>
+						<p class="mb-2">Đơn hàng của bạn đã đạt điều kiện cho mã <strong class="text-primary">${code.Code}</strong></p>
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<span><i class="bi bi-ticket-perforated me-1"></i><strong>${discountText}</strong></span>
+							<span class="badge bg-success">Tiết kiệm ${Math.round(savings).toLocaleString('vi-VN')} đ</span>
+						</div>
+						${code.MinimumOrderAmount ? `<small class="text-muted d-block mb-2"><i class="bi bi-info-circle me-1"></i>Áp dụng cho đơn từ ${parseFloat(code.MinimumOrderAmount).toLocaleString('vi-VN')} đ</small>` : ''}
+						<button type="button" class="btn btn-sm btn-primary mt-2" onclick="applyDiscountCodeQuick('${code.Code}'); this.closest('.alert').remove();">
+							<i class="bi bi-check-lg me-1"></i>Áp dụng ngay
+						</button>
+					</div>
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+			`;
+			
+			document.body.appendChild(alert);
+			
+			// Đánh dấu đã hiển thị
+			if (code.Id) {
+				shownDiscountCodes.add(code.Id);
+			}
+			
+			// Auto dismiss after 10 seconds
+			setTimeout(() => {
+				if (alert.parentNode) {
+					alert.classList.remove('show');
+					setTimeout(() => alert.remove(), 300);
+				}
+			}, 10000);
+		}
+		
+		// Update quantity via AJAX
+		function updateQuantityOnServer(productId, quantity) {
+			// Prevent duplicate updates
+			if (updateQueue.has(productId)) {
+				return;
+			}
+			
+			updateQueue.add(productId);
+			isUpdating = true;
+			
+			const form = document.querySelector(`.quantity-form input[name="productId"][value="${productId}"]`)?.closest('form');
+			if (!form) {
+				updateQueue.delete(productId);
+				isUpdating = false;
+				return;
+			}
+			
+			// Disable buttons during update
+			const buttons = form.querySelectorAll('button');
+			const input = form.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+			buttons.forEach(btn => btn.disabled = true);
+			if (input) input.disabled = true;
+			
+			const formData = new FormData(form);
+			formData.set('quantity', quantity);
+			
+			// Get anti-forgery token
+			const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+			if (token) {
+				formData.append('__RequestVerificationToken', token);
+			}
+			
+			fetch(form.action, {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			}).then(response => {
+				if (response.ok) {
+					return response.json();
+				} else {
+					throw new Error('Server error');
+				}
+			}).then(data => {
+				if (data && data.success) {
+					// Update UI with server response
+					const itemTotalElement = document.querySelector(`.item-total[data-product-id="${productId}"]`);
+					if (itemTotalElement) {
+						itemTotalElement.textContent = Math.round(data.itemTotal).toLocaleString('vi-VN') + ' đ';
+					}
+					
+					// Update cart total
+					const cartTotalElement = document.getElementById('cart-total');
+					if (cartTotalElement) {
+						cartTotalElement.textContent = Math.round(data.total).toLocaleString('vi-VN') + ' đ';
+					}
+					
+					// Update summary total
+					const summaryTotalElement = document.getElementById('summary-total');
+					if (summaryTotalElement) {
+						summaryTotalElement.textContent = Math.round(data.total).toLocaleString('vi-VN') + ' đ';
+					}
+					
+					// Check for new available discount codes (real-time)
+					checkAvailableDiscountCodes(data.total);
+					
+					// Also check from server response if available
+					if (data.availableDiscountCodes && data.availableDiscountCodes.length > 0 && data.hasBetterDiscount) {
+						// Delay notification a bit to avoid spam
+						setTimeout(function() {
+							showNewDiscountCodesNotification(data.availableDiscountCodes, data.total);
+						}, 500);
+					}
+					
+					// Re-enable controls
+					buttons.forEach(btn => btn.disabled = false);
+					if (input) input.disabled = false;
+					updateQueue.delete(productId);
+					isUpdating = false;
+				} else {
+					throw new Error('Update failed');
+				}
+			}).catch(error => {
+				buttons.forEach(btn => btn.disabled = false);
+				if (input) input.disabled = false;
+				updateQueue.delete(productId);
+				isUpdating = false;
+				console.error('Error updating quantity:', error);
+				
+				// If JSON parsing fails, it might be a redirect, so reload
+				if (error instanceof SyntaxError) {
+					window.location.reload();
+				} else {
+					alert('Có lỗi xảy ra khi cập nhật số lượng. Vui lòng thử lại.');
+					// Recalculate totals on error
+					updateTotals();
+				}
+			});
+		}
+		
+		// Quantity input change
+		document.querySelectorAll('.quantity-input').forEach(input => {
+			let timeout;
+			
+			input.addEventListener('change', function() {
+				const quantity = parseInt(this.value) || 1;
+				if (quantity < 1) {
+					this.value = 1;
+					updateTotals();
+					return;
+				}
+				
+				// Update totals immediately
+				updateTotals();
+				
+				// Debounce: Update server after 1 second of no changes
+				clearTimeout(timeout);
+				timeout = setTimeout(() => {
+					if (!isUpdating) {
+						updateQuantityOnServer(this.dataset.productId, quantity);
+					}
+				}, 1000);
+			});
+			
+			input.addEventListener('input', function() {
+				// Update totals in real-time as user types (but don't update server yet)
+				if (!isUpdating) {
+					updateTotals();
+				}
+			});
+		});
+		
+		// Decrease button
+		document.querySelectorAll('.quantity-decrease').forEach(btn => {
+			btn.addEventListener('click', function() {
+				if (isUpdating) return;
+				
+				const productId = this.dataset.productId;
+				const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+				if (input && !input.disabled) {
+					const currentValue = parseInt(input.value) || 1;
+					if (currentValue > 1) {
+						const newValue = currentValue - 1;
+						input.value = newValue;
+						// Update UI immediately
+						updateTotals();
+						// Then update server immediately (no delay for button clicks)
+						updateQuantityOnServer(productId, newValue);
+					}
+				}
+			});
+		});
+		
+		// Increase button
+		document.querySelectorAll('.quantity-increase').forEach(btn => {
+			btn.addEventListener('click', function() {
+				if (isUpdating) return;
+				
+				const productId = this.dataset.productId;
+				const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+				if (input && !input.disabled) {
+					const currentValue = parseInt(input.value) || 1;
+					const newValue = currentValue + 1;
+					input.value = newValue;
+					// Update UI immediately
+					updateTotals();
+					// Then update server immediately (no delay for button clicks)
+					updateQuantityOnServer(productId, newValue);
+				}
+			});
+		});
+	});
+
+	// Discount Code Functionality - Sử dụng cả vanilla JS và jQuery để đảm bảo hoạt động
+	function initDiscountCode() {
+		const applyDiscountBtn = document.getElementById('applyDiscountBtn');
+		const removeDiscountBtn = document.getElementById('removeDiscountBtn');
+		const discountCodeInput = document.getElementById('discountCodeInput');
+		const discountCodeForm = document.getElementById('discountCodeForm');
+		const discountCodeApplied = document.getElementById('discountCodeApplied');
+		const appliedCodeText = document.getElementById('appliedCodeText');
+		const discountAmountDisplay = document.getElementById('discountAmountDisplay');
+		const discountSummaryItem = document.getElementById('discountSummaryItem');
+		const discountSummaryAmount = document.getElementById('discountSummaryAmount');
+
+		if (!applyDiscountBtn || !discountCodeInput) {
+			console.warn('Discount code elements not found, retrying...');
+			setTimeout(initDiscountCode, 100);
+			return;
+		}
+
+		console.log('Discount code elements found, initializing...');
+
+		function showDiscountNotification(message, type) {
+			const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+			const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+			const alert = $('<div class="alert ' + alertClass + ' alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999; min-width: 300px;">' +
+				'<div class="d-flex align-items-center">' +
+				'<i class="bi ' + icon + ' me-2 fs-5"></i>' +
+				'<div class="flex-grow-1">' + message + '</div>' +
+				'<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+				'</div></div>');
+			$('body').append(alert);
+			setTimeout(function () {
+				alert.alert('close');
+			}, 3000);
+		}
+
+		function showNewDiscountCodesNotification(codes, cartTotal) {
+			if (!codes || codes.length === 0) return;
+			
+			// Tìm mã giảm giá tốt nhất (giảm nhiều nhất)
+			const bestCode = codes.reduce((best, current) => {
+				const currentDiscount = current.discountPercent 
+					? (cartTotal * current.discountPercent / 100)
+					: (current.discountAmount || 0);
+				const bestDiscount = best.discountPercent 
+					? (cartTotal * best.discountPercent / 100)
+					: (best.discountAmount || 0);
+				return currentDiscount > bestDiscount ? current : best;
+			}, codes[0]);
+			
+			// Tính số tiền tiết kiệm
+			const savings = bestCode.discountPercent 
+				? (cartTotal * bestCode.discountPercent / 100)
+				: (bestCode.discountAmount || 0);
+			
+			// Đánh dấu mã đã hiển thị
+			if (bestCode.id) {
+				shownDiscountCodes.add(bestCode.id);
+			}
+			
+			// Tạo notification
+			const alert = $('<div class="alert alert-info alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3 shadow-lg" style="z-index: 10000; min-width: 400px; max-width: 500px; border-left: 4px solid #0dcaf0;">' +
+				'<div class="d-flex align-items-start">' +
+				'<i class="bi bi-gift-fill me-2 fs-4 text-info"></i>' +
+				'<div class="flex-grow-1">' +
+				'<h6 class="alert-heading mb-2 fw-bold">🎉 Bạn có thể tiết kiệm thêm!</h6>' +
+				'<p class="mb-2">Đơn hàng của bạn đã đạt điều kiện cho mã giảm giá <strong class="text-primary">' + bestCode.code + '</strong></p>' +
+				'<div class="d-flex align-items-center justify-content-between mb-2">' +
+				'<span><i class="bi bi-ticket-perforated me-1"></i><strong>' + bestCode.discountText + '</strong></span>' +
+				'<span class="badge bg-success">Tiết kiệm ' + Math.round(savings).toLocaleString('vi-VN') + ' đ</span>' +
+				'</div>' +
+				'<button type="button" class="btn btn-sm btn-primary mt-2" onclick="applyDiscountCodeQuick(\'' + bestCode.code + '\')">' +
+				'<i class="bi bi-check-lg me-1"></i>Áp dụng ngay</button>' +
+				'</div>' +
+				'<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+				'</div></div>');
+			
+			$('body').append(alert);
+			
+			// Auto dismiss after 10 seconds
+			setTimeout(function () {
+				alert.alert('close');
+			}, 10000);
+		}
+
+		// Function to quickly apply discount code
+		window.applyDiscountCodeQuick = function(code) {
+			const input = document.getElementById('discountCodeInput');
+			const btn = document.getElementById('applyDiscountBtn');
+			if (input && btn) {
+				input.value = code;
+				if (typeof handleApplyDiscount === 'function') {
+					handleApplyDiscount();
+				} else if (btn.onclick) {
+					btn.click();
+				}
+			}
+		};
+
+		// Đảm bảo button không bị disable
+		applyDiscountBtn.disabled = false;
+		applyDiscountBtn.style.pointerEvents = 'auto';
+		applyDiscountBtn.style.cursor = 'pointer';
+
+		// Remove existing event listeners bằng cách clone button
+		const newApplyBtn = applyDiscountBtn.cloneNode(true);
+		applyDiscountBtn.parentNode.replaceChild(newApplyBtn, applyDiscountBtn);
+		const applyBtn = document.getElementById('applyDiscountBtn');
+
+		// Attach event listener nhiều cách để đảm bảo hoạt động
+		applyBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			handleApplyDiscount();
+		});
+
+		// Dùng jQuery nếu có
+		if (typeof $ !== 'undefined') {
+			$(applyBtn).off('click').on('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				handleApplyDiscount();
+			});
+		}
+
+		// Make function global để có thể gọi từ inline onclick
+		window.handleApplyDiscount = function() {
+			const code = discountCodeInput.value.trim().toUpperCase();
+			if (!code) {
+				showDiscountNotification('Vui lòng nhập mã giảm giá', 'error');
+				return;
+			}
+
+			console.log('Applying discount code:', code);
+			applyBtn.disabled = true;
+			applyBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+			applyBtn.style.pointerEvents = 'none';
+
+				$.ajax({
+					url: '@Url.Action("ApplyDiscountCode", "ShoppingCart", new { area = "Customer" })',
+					type: 'POST',
+					contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+					data: { 
+						discountCode: code
+					},
+				success: function(response) {
+					console.log('Discount code response:', response);
+					if (response && response.success) {
+						// Hide form, show applied
+						if (discountCodeForm) discountCodeForm.style.display = 'none';
+						if (discountCodeApplied) discountCodeApplied.style.display = 'block';
+						
+						if (appliedCodeText) appliedCodeText.textContent = response.code;
+						
+						// Display discount amount
+						let discountText = '';
+						if (response.discountPercent) {
+							discountText = `-${response.discountPercent}% (${Math.round(response.discountAmount).toLocaleString('vi-VN')} đ)`;
+						} else {
+							discountText = `-${Math.round(response.discountAmount).toLocaleString('vi-VN')} đ`;
+						}
+						if (discountAmountDisplay) discountAmountDisplay.textContent = discountText;
+						
+						// Update summary
+						if (discountSummaryItem) discountSummaryItem.style.display = 'flex';
+						if (discountSummaryAmount) discountSummaryAmount.textContent = `-${Math.round(response.discountAmount).toLocaleString('vi-VN')} đ`;
+						
+						// Update total in summary sidebar
+						const summaryTotal = document.getElementById('summary-total');
+						if (summaryTotal) {
+							summaryTotal.textContent = Math.round(response.finalTotal).toLocaleString('vi-VN') + ' đ';
+						}
+						
+						// Update total in table footer
+						const cartTotalElement = document.getElementById('cart-total');
+						if (cartTotalElement) {
+							cartTotalElement.textContent = Math.round(response.finalTotal).toLocaleString('vi-VN') + ' đ';
+						}
+						
+						showDiscountNotification(response.message || 'Áp dụng mã giảm giá thành công!', 'success');
+						
+						// KHÔNG reload trang nữa, chỉ cập nhật UI
+					} else {
+						showDiscountNotification(response?.message || 'Không thể áp dụng mã giảm giá', 'error');
+						applyBtn.disabled = false;
+						applyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+						applyBtn.style.pointerEvents = 'auto';
+					}
+				},
+				error: function(xhr, status, error) {
+					console.error('Error applying discount code:', error);
+					console.error('Status:', status);
+					console.error('Response:', xhr.responseText);
+					let errorMessage = 'Có lỗi xảy ra khi áp dụng mã giảm giá';
+					if (xhr.responseJSON && xhr.responseJSON.message) {
+						errorMessage = xhr.responseJSON.message;
+					} else if (xhr.status === 401) {
+						errorMessage = 'Vui lòng đăng nhập để sử dụng mã giảm giá';
+					} else if (xhr.status === 400) {
+						errorMessage = 'Mã giảm giá không hợp lệ';
+					} else if (xhr.status === 0) {
+						errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+					}
+					showDiscountNotification(errorMessage, 'error');
+					applyBtn.disabled = false;
+					applyBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+					applyBtn.style.pointerEvents = 'auto';
+				}
+			});
+		};
+
+		// Allow Enter key to apply
+		if (discountCodeInput) {
+			discountCodeInput.addEventListener('keypress', function(e) {
+				if (e.key === 'Enter' || e.keyCode === 13) {
+					e.preventDefault();
+					e.stopPropagation();
+					handleApplyDiscount();
+				}
+			});
+		}
+
+		// Remove discount code handler
+		if (removeDiscountBtn) {
+			removeDiscountBtn.addEventListener('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				handleRemoveDiscount();
+			});
+		}
+
+		function handleRemoveDiscount() {
+			$.ajax({
+				url: '@Url.Action("RemoveDiscountCode", "ShoppingCart", new { area = "Customer" })',
+				type: 'POST',
+				success: function(response) {
+					if (response && response.success) {
+						// Show form, hide applied
+						if (discountCodeForm) discountCodeForm.style.display = 'block';
+						if (discountCodeApplied) discountCodeApplied.style.display = 'none';
+						if (discountCodeInput) discountCodeInput.value = '';
+						
+						// Hide discount summary
+						if (discountSummaryItem) discountSummaryItem.style.display = 'none';
+						
+						// Update total in summary sidebar
+						const summaryTotal = document.getElementById('summary-total');
+						if (summaryTotal && response.finalTotal) {
+							summaryTotal.textContent = Math.round(response.finalTotal).toLocaleString('vi-VN') + ' đ';
+						}
+						
+						// Update total in table footer
+						const cartTotalElement = document.getElementById('cart-total');
+						if (cartTotalElement && response.finalTotal) {
+							cartTotalElement.textContent = Math.round(response.finalTotal).toLocaleString('vi-VN') + ' đ';
+						}
+						
+						showDiscountNotification(response.message || 'Đã xóa mã giảm giá', 'success');
+						
+						// KHÔNG reload trang nữa, chỉ cập nhật UI
+					}
+				},
+				error: function(xhr, status, error) {
+					console.error('Error removing discount code:', error);
+					showDiscountNotification('Có lỗi xảy ra khi xóa mã giảm giá', 'error');
+				}
+			});
+		}
+	}
+
+	// Initialize discount code functionality - thử nhiều cách để đảm bảo hoạt động
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initDiscountCode);
+	} else {
+		initDiscountCode();
+	}
+
+	// Dùng jQuery nếu có
+	if (typeof jQuery !== 'undefined') {
+		jQuery(document).ready(function($) {
+			initDiscountCode();
+		});
+	}
+
+	// Fallback: thử lại sau 500ms
+	setTimeout(function() {
+		const btn = document.getElementById('applyDiscountBtn');
+		if (btn && !btn.hasAttribute('data-initialized')) {
+			console.log('Retrying discount code initialization...');
+			btn.setAttribute('data-initialized', 'true');
+			initDiscountCode();
+		}
+	}, 500);
+</script>
+
+

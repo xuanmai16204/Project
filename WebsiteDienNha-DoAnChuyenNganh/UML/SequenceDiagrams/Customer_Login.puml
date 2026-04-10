@@ -1,0 +1,34 @@
+@startuml Sequence Diagram - Customer Đăng nhập
+
+actor Customer
+participant "AccountController" as Controller
+participant "SignInManager" as SignIn
+participant "UserManager" as UserManager
+participant "Database" as DB
+
+Customer -> Controller: GET /Customer/Account/Login
+Controller -> Customer: Hiển thị form đăng nhập
+
+Customer -> Controller: POST Login (phoneNumber, password)
+Controller -> UserManager: FindByPhoneNumber(phoneNumber)
+UserManager -> DB: SELECT * FROM Users WHERE PhoneNumber = phoneNumber
+DB -> UserManager: User object hoặc null
+
+alt User tồn tại
+    Controller -> SignIn: PasswordSignInAsync(user, password, false, false)
+    SignIn -> DB: Verify password hash
+    DB -> SignIn: Password valid/invalid
+    
+    alt Mật khẩu đúng
+        SignIn -> Controller: Success
+        Controller -> Customer: Redirect to Home/ReturnUrl
+    else Mật khẩu sai
+        SignIn -> Controller: Failed
+        Controller -> Customer: Error: "Số điện thoại hoặc mật khẩu không đúng"
+    end
+else User không tồn tại
+    Controller -> Customer: Error: "Số điện thoại hoặc mật khẩu không đúng"
+end
+
+@enduml
+

@@ -1,0 +1,1185 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject SignInManager<WebsiteDienNha_DoAnChuyenNganh.Models.ApplicationUser> SignInManager
+@inject UserManager<WebsiteDienNha_DoAnChuyenNganh.Models.ApplicationUser> UserManager
+@inject WebsiteDienNha_DoAnChuyenNganh.Data.ApplicationDbContext DbContext
+@inject WebsiteDienNha_DoAnChuyenNganh.Services.CartService CartService
+
+@{
+    var isSignedIn = SignInManager.IsSignedIn(User);
+    WebsiteDienNha_DoAnChuyenNganh.Models.ApplicationUser? currentUser = null;
+    if (isSignedIn)
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+    }
+    var loyaltyLevel = currentUser?.LoyaltyLevel?.Name ?? "Khách thân thiết";
+    var loyaltyPoints = currentUser?.LoyaltyPoints ?? 0;
+    
+    // Load cart count
+    var cartCount = 0;
+    try
+    {
+        var cartItems = CartService.GetCart();
+        cartCount = cartItems.Sum(i => i.Quantity);
+    }
+    catch { }
+    
+    // Load categories for menu
+    var categories = new List<WebsiteDienNha_DoAnChuyenNganh.Models.Category>();
+    try
+    {
+        categories = await DbContext.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .Take(10)
+            .ToListAsync();
+    }
+    catch { }
+}
+
+<!-- Top Utility Bar -->
+<div class="top-utility-bar">
+    <div class="container-fluid">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 py-2">
+            <div class="d-flex flex-wrap align-items-center gap-3 text-white-50 small">
+                <span><i class="bi bi-telephone-outbound me-1 text-white"></i>Hotline: <a class="text-white text-decoration-none fw-semibold" href="tel:0888666888">0888 66 88</a></span>
+            <span class="d-none d-md-inline">|</span>
+            <span><i class="bi bi-envelope-open me-1 text-white"></i>support@diennha.vn</span>
+            <span class="d-none d-xl-inline">|</span>
+                <span><i class="bi bi-clock me-1 text-white"></i>Giờ làm việc: 8:00 - 22:00</span>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            @if (isSignedIn && currentUser is not null)
+            {
+                <span class="status-chip bg-gradient-primary">
+                    <i class="bi bi-lightning-charge me-1"></i>@loyaltyLevel
+                </span>
+                <span class="status-chip">
+                    <i class="bi bi-stars me-1 text-warning"></i>@loyaltyPoints.ToString("N0") điểm
+                </span>
+            }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Header -->
+<header class="main-header">
+        <div class="container-fluid px-3 px-md-4">
+        <div class="header-content">
+            <!-- Logo Section -->
+            <div class="header-logo">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <div class="logo-wrapper">
+                        <span class="logo-icon">⚡</span>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-name">Điện Nhà</span>
+                        <span class="logo-tagline">Thiết bị điện chính hãng</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Search Bar Section -->
+            <div class="header-search">
+                <form asp-controller="Product" asp-action="Index" method="get" class="search-form">
+                    <div class="search-wrapper">
+                        <input type="text" 
+                               name="search" 
+                               class="search-input" 
+                               placeholder="Tìm kiếm sản phẩm, thương hiệu..." 
+                               autocomplete="off">
+                        <button type="submit" class="search-button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
+                </form>
+            </div>
+
+            <!-- Action Icons Section -->
+            <div class="header-actions">
+                @if (isSignedIn)
+                {
+                    <!-- Cart Icon -->
+                    <a asp-area="Customer" asp-controller="ShoppingCart" asp-action="Index" class="action-icon cart-icon" title="Giỏ hàng">
+                        <i class="bi bi-cart3"></i>
+                        @if (cartCount > 0)
+                        {
+                            <span class="action-badge">@cartCount</span>
+                        }
+                    </a>
+
+                    <!-- User Menu -->
+                    <div class="action-icon user-menu-wrapper">
+                        <a href="#" class="user-menu-trigger" id="userMenuTrigger" title="Tài khoản">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
+                        <div class="user-menu-dropdown" id="userMenuDropdown">
+                            <div class="user-menu-header">
+                                <div class="user-avatar">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">@UserManager.GetUserName(User)</div>
+                                    <div class="user-level">@loyaltyLevel</div>
+                                </div>
+                            </div>
+                            <div class="user-menu-divider"></div>
+                            <a class="user-menu-item" asp-area="" asp-controller="Order" asp-action="History">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Lịch sử đơn hàng</span>
+                            </a>
+                            <a class="user-menu-item" asp-area="Customer" asp-controller="Notification" asp-action="Index">
+                                <i class="bi bi-bell"></i>
+                                <span>Thông báo</span>
+                            </a>
+                            <a class="user-menu-item" asp-area="Customer" asp-controller="Comparison" asp-action="Index">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <span>So sánh sản phẩm</span>
+                            </a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <div class="user-menu-divider"></div>
+                                <a class="user-menu-item" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <span>Quản trị</span>
+                                </a>
+                            }
+                            <div class="user-menu-divider"></div>
+                            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="user-menu-item logout-item">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Đăng xuất</span>
+                                </button>
+                            </form>
+                        </div>
+                </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="action-icon login-icon" title="Đăng nhập">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="register-btn">
+                        <i class="bi bi-person-plus me-2"></i>
+                        <span>Đăng ký</span>
+                    </a>
+                }
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house-door"></i>
+                            <span>Trang chủ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <ul class="dropdown-menu mega-menu" aria-labelledby="categoriesDropdown">
+                            <div class="mega-menu-content">
+                                @foreach (var category in categories)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Product" asp-action="Index" asp-route-categoryId="@category.Id">
+                                            <i class="bi bi-circle-fill me-2"></i>@category.Name
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item fw-bold" asp-controller="Product" asp-action="Index">
+                                        <i class="bi bi-arrow-right-circle me-2"></i>Xem tất cả
+                                    </a>
+                                </li>
+                            </div>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">
+                            <i class="bi bi-box-seam"></i>
+                            <span>Sản phẩm</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Customer" asp-controller="ShoppingCart" asp-action="Index">
+                            <i class="bi bi-cart"></i>
+                            <span>Giỏ hàng</span>
+                            @if (cartCount > 0)
+                            {
+                                <span class="nav-badge">@cartCount</span>
+                            }
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Customer" asp-controller="Comparison" asp-action="Index">
+                            <i class="bi bi-arrow-left-right"></i>
+                            <span>So sánh</span>
+                        </a>
+                    </li>
+                    @if (isSignedIn)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Order" asp-action="History">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Đơn hàng</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div class="collapse mobile-menu" id="mobileMenu">
+            <ul class="mobile-menu-list">
+                <li><a asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i>Trang chủ</a></li>
+                <li><a asp-area="" asp-controller="Product" asp-action="Index"><i class="bi bi-box-seam"></i>Sản phẩm</a></li>
+                <li><a asp-area="Customer" asp-controller="ShoppingCart" asp-action="Index"><i class="bi bi-cart"></i>Giỏ hàng</a></li>
+                <li><a asp-area="Customer" asp-controller="Comparison" asp-action="Index"><i class="bi bi-arrow-left-right"></i>So sánh</a></li>
+                @if (isSignedIn)
+                {
+                    <li><a asp-area="" asp-controller="Order" asp-action="History"><i class="bi bi-clock-history"></i>Đơn hàng</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+</header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // User menu toggle
+        const userMenuTrigger = document.getElementById('userMenuTrigger');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        
+        if (userMenuTrigger && userMenuDropdown) {
+            userMenuTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                userMenuDropdown.classList.toggle('show');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenuTrigger.contains(e.target) && !userMenuDropdown.contains(e.target)) {
+                    userMenuDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Search suggestions (simple implementation)
+        const searchInput = document.querySelector('.search-input');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        
+        if (searchInput && searchSuggestions) {
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length >= 2) {
+                    searchTimeout = setTimeout(function() {
+                        // Load suggestions via AJAX
+                        $.ajax({
+                            url: '@Url.Action("SearchSuggestions", "Product")',
+                            type: 'GET',
+                            data: { query: query },
+                            success: function(data) {
+                                if (data && data.length > 0) {
+                                    let html = '<div class="suggestions-list">';
+                                    data.forEach(function(item) {
+                                        html += `<a href="/Product/Details/${item.id}" class="suggestion-item">
+                                                    <i class="bi bi-search me-2"></i>
+                                                    <span>${item.name}</span>
+                                                 </a>`;
+                                    });
+                                    html += '</div>';
+                                    searchSuggestions.innerHTML = html;
+                                    searchSuggestions.style.display = 'block';
+                                } else {
+                                    searchSuggestions.style.display = 'none';
+                                }
+                            }
+                        });
+                    }, 300);
+                } else {
+                    searchSuggestions.style.display = 'none';
+                }
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                    searchSuggestions.style.display = 'none';
+                }
+            });
+        }
+
+        // Active nav link
+        const currentPath = window.location.pathname.toLowerCase();
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = (link.getAttribute('href') || '').toLowerCase();
+            if (href && currentPath.startsWith(href) && href !== '#') {
+                link.classList.add('active');
+            }
+        });
+
+        // Load comparison count
+        loadComparisonCount();
+    });
+
+    function loadComparisonCount() {
+        $.ajax({
+            url: '@Url.Action("GetCount", "Comparison", new { area = "Customer" })',
+            type: 'GET',
+            success: function (response) {
+                updateComparisonBadge(response.count);
+            }
+        });
+    }
+
+    function updateComparisonBadge(count) {
+        var $badge = $('.comparison-badge');
+        if (count > 0) {
+            $badge.text(count).show();
+        } else {
+            $badge.hide();
+        }
+    }
+</script>
+
+<style>
+    /* Top Utility Bar */
+    .top-utility-bar {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.875rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1001;
+        width: 100%;
+    }
+
+    .status-chip {
+        padding: 0.35rem 0.85rem;
+        border-radius: 50px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .status-chip:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .status-chip.link-chip {
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(120deg, rgba(13, 110, 253, 0.3), rgba(13, 110, 253, 0.15)) !important;
+        border-color: rgba(13, 110, 253, 0.3) !important;
+    }
+
+    /* Main Header */
+    .main-header {
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        position: fixed;
+        top: 40px; /* Đặt dưới top-utility-bar */
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        border-bottom: 1px solid #e9ecef;
+        width: 100%;
+    }
+
+    .main-header .container-fluid {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.5rem 0;
+        min-height: 100px;
+    }
+
+    /* Logo Section */
+    .header-logo {
+        flex-shrink: 0;
+        min-width: 200px;
+    }
+
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: #212529;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+        transform: translateY(-2px);
+    }
+
+    .logo-wrapper {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .navbar-brand:hover .logo-wrapper {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    .logo-icon {
+        font-size: 2rem;
+        color: white;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logo-name {
+        font-size: 1.75rem;
+        line-height: 1.2;
+        color: #212529;
+        white-space: nowrap;
+        font-weight: 800;
+    }
+
+    .logo-tagline {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 400;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    /* Search Bar Section */
+    .header-search {
+        flex: 1;
+        min-width: 300px;
+        max-width: 700px;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .search-wrapper {
+        display: flex;
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 50px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        width: 100%;
+        min-width: 300px;
+    }
+
+    .search-wrapper:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        background: #fff;
+    }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 0.875rem 1.75rem;
+        font-size: 1rem;
+        outline: none;
+        color: #212529;
+    }
+
+    .search-input::placeholder {
+        color: #adb5bd;
+    }
+
+    .search-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.875rem 1.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-button:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: scale(1.05);
+    }
+
+    .search-button i {
+        font-size: 1.1rem;
+    }
+
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 0.75rem;
+        margin-top: 0.5rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        color: #212529;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .suggestion-item:hover {
+        background: #f8f9fa;
+        color: #667eea;
+        padding-left: 1.5rem;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Action Icons */
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+        min-width: 150px;
+        justify-content: flex-end;
+    }
+
+    .action-icon {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 50%;
+        color: #212529;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-icon:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .action-icon.login-icon {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .action-icon.login-icon:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .action-icon i {
+        font-size: 1.35rem;
+        transition: transform 0.3s ease;
+    }
+
+    .action-icon:hover i {
+        transform: scale(1.1);
+    }
+
+    /* Register Button */
+    .register-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .register-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .register-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .register-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .register-btn:active {
+        transform: translateY(-1px);
+    }
+
+    .register-btn i {
+        position: relative;
+        z-index: 1;
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .register-btn span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .register-btn:hover i {
+        transform: scale(1.15) rotate(5deg);
+    }
+
+    .action-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        border: 2px solid white;
+    }
+
+    /* User Menu */
+    .user-menu-wrapper {
+        position: relative;
+    }
+
+    .user-menu-trigger {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .user-menu-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        min-width: 280px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        border: 1px solid #e9ecef;
+    }
+
+    .user-menu-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .user-menu-header {
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1rem 1rem 0 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.75rem;
+    }
+
+    .user-info {
+        flex: 1;
+        color: white;
+    }
+
+    .user-name {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .user-level {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .user-menu-divider {
+        height: 1px;
+        background: #e9ecef;
+        margin: 0.5rem 0;
+    }
+
+    .user-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        color: #212529;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .user-menu-item:hover {
+        background: #f8f9fa;
+        color: #667eea;
+        padding-left: 1.5rem;
+    }
+
+    .user-menu-item i {
+        width: 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .user-menu-item:hover i {
+        color: #667eea;
+    }
+
+    .logout-item {
+        color: #dc3545;
+    }
+
+    .logout-item:hover {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    /* Navigation Menu */
+    .main-nav {
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        margin-top: 0;
+        padding: 0.75rem 0;
+        position: fixed;
+        top: calc(40px + 100px); /* Đặt dưới main-header (40px utility + 100px header) */
+        left: 0;
+        right: 0;
+        z-index: 999;
+        width: 100%;
+    }
+    
+    /* Thêm padding-top cho body để không bị che bởi header fixed */
+    body {
+        padding-top: calc(40px + 100px + 50px); /* utility + header + nav */
+    }
+    
+    /* Trang home không cần padding vì đã có margin-top */
+    body:has(.hero-banner) {
+        padding-top: 0;
+    }
+    
+    /* Responsive: Mobile */
+    @@media (max-width: 767.98px) {
+        .main-header {
+            top: 50px; /* Utility bar cao hơn trên mobile */
+        }
+        
+        .main-nav {
+            top: calc(50px + 70px); /* Utility + header mobile */
+            display: none; /* Ẩn nav trên mobile */
+        }
+        
+        body {
+            padding-top: calc(50px + 70px); /* Chỉ utility + header trên mobile */
+        }
+    }
+
+    .nav-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-menu {
+        display: flex;
+        list-style: none;
+        margin: 0 auto;
+        padding: 0;
+        gap: 0.75rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-item {
+        position: relative;
+    }
+    
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 1rem 1.5rem;
+        color: #495057;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .nav-link:hover,
+    .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .nav-link i {
+        font-size: 1.2rem;
+    }
+
+    .nav-badge {
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 0.25rem;
+    }
+
+    /* Mega Menu */
+    .nav-item.dropdown {
+        position: relative;
+    }
+
+    .mega-menu {
+        padding: 1.5rem;
+        min-width: 300px;
+        border-radius: 1rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        position: absolute !important;
+        top: 100% !important;
+        left: 0 !important;
+        margin-top: 0.5rem !important;
+        z-index: 1050 !important;
+        background: white !important;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+    .nav-item.dropdown:hover .mega-menu,
+    .nav-item.dropdown.show .mega-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+        display: block !important;
+    }
+
+    .mega-menu-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.5rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .mega-menu-content li {
+        margin: 0;
+    }
+
+    .mega-menu .dropdown-item {
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        display: block;
+        text-decoration: none;
+        color: #212529;
+        position: relative;
+        z-index: 1;
+    }
+
+    .mega-menu .dropdown-item:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        transform: translateX(5px);
+        color: #667eea;
+        z-index: 2;
+    }
+
+    .mega-menu .dropdown-divider {
+        grid-column: 1 / -1;
+        margin: 0.75rem 0;
+    }
+
+    /* Mobile Menu Toggle */
+    .mobile-menu-toggle {
+        display: none;
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        color: #212529;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .mobile-menu-toggle:hover {
+        background: #e9ecef;
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .mobile-menu {
+        background: white;
+        border-top: 1px solid #e9ecef;
+        margin-top: 1rem;
+    }
+
+    .mobile-menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .mobile-menu-list li a {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        color: #212529;
+        text-decoration: none;
+        border-bottom: 1px solid #f8f9fa;
+        transition: all 0.2s ease;
+    }
+
+    .mobile-menu-list li a:hover {
+        background: #f8f9fa;
+        padding-left: 2rem;
+        color: #667eea;
+    }
+
+    /* Responsive */
+    @@media (max-width: 1200px) {
+        .header-search {
+            max-width: 500px;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .header-content {
+            flex-wrap: nowrap;
+            gap: 1rem;
+            padding: 1rem 0;
+        }
+
+        .header-logo {
+            min-width: auto;
+        }
+
+        .header-search {
+            flex: 1;
+            min-width: 200px;
+            max-width: none;
+            margin: 0;
+        }
+
+        .header-actions {
+            min-width: auto;
+            gap: 0.5rem;
+        }
+
+        .mega-menu {
+            min-width: 280px;
+            padding: 1.25rem;
+        }
+
+        .mega-menu-content {
+            grid-template-columns: 1fr;
+        }
+
+        .logo-text {
+            display: none;
+        }
+
+        .mobile-menu-toggle {
+            display: block;
+            margin-left: 0.5rem;
+        }
+
+        .main-nav {
+            display: none;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .header-content {
+            padding: 0.875rem 0;
+            min-height: 70px;
+        }
+
+        .logo-wrapper {
+            width: 40px;
+            height: 40px;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .header-search {
+            min-width: 150px;
+        }
+
+        .search-input {
+            font-size: 0.875rem;
+            padding: 0.625rem 1rem;
+        }
+
+        .search-button {
+            padding: 0.625rem 1rem;
+        }
+
+        .action-icon {
+            width: 45px;
+            height: 45px;
+        }
+
+        .action-icon i {
+            font-size: 1.2rem;
+        }
+
+        .register-btn {
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        .register-btn i {
+        font-size: 1rem;
+        }
+    }
+
+    @@media (max-width: 575.98px) {
+        .header-content {
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            order: 1;
+        }
+
+        .mobile-menu-toggle {
+            order: 2;
+            margin-left: auto;
+        }
+
+        .header-actions {
+            order: 3;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .header-search {
+            order: 4;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+    }
+</style>

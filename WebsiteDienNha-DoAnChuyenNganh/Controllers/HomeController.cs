@@ -1,0 +1,67 @@
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebsiteDienNha_DoAnChuyenNganh.Data;
+using WebsiteDienNha_DoAnChuyenNganh.Models;
+
+namespace WebsiteDienNha_DoAnChuyenNganh.Controllers
+{
+    public class HomeController : Controller
+    {
+        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
+
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        {
+            _logger = logger;
+            _context = context;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // Load categories
+            var categories = await _context.Categories
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .Take(8)
+                .ToListAsync();
+
+            // Load featured products with promotions
+            var featuredProducts = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.PromotionProducts)
+                    .ThenInclude(pp => pp.Promotion)
+                .Where(p => p.IsActive)
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(8)
+                .ToListAsync();
+
+            // Load best selling products with promotions (có thể dựa vào số lượng bán hoặc rating)
+            var bestSellingProducts = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.PromotionProducts)
+                    .ThenInclude(pp => pp.Promotion)
+                .Where(p => p.IsActive)
+                .OrderByDescending(p => p.Stock) // Tạm thời dùng Stock, sau có thể thêm field SalesCount
+                .Take(8)
+                .ToListAsync();
+
+            ViewBag.Categories = categories;
+            ViewBag.FeaturedProducts = featuredProducts;
+            ViewBag.BestSellingProducts = bestSellingProducts;
+
+            return View();
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
+}

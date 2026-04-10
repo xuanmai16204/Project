@@ -1,0 +1,764 @@
+@model IEnumerable<WebsiteDienNha_DoAnChuyenNganh.Models.Product>
+@{
+	ViewData["Title"] = "So sánh sản phẩm";
+	var comparisonCount = ViewBag.ComparisonCount as int? ?? Model.Count();
+}
+
+<style>
+	/* Comparison Page Styles */
+	.comparison-page {
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		min-height: 100vh;
+		padding: 2rem 0;
+	}
+
+	.comparison-header {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 1rem;
+		padding: 2rem;
+		color: white;
+		box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+		margin-bottom: 2rem;
+		animation: slideDown 0.5s ease-out;
+	}
+
+	.comparison-header h1 {
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+		text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+	}
+
+	.comparison-header p {
+		font-size: 1.1rem;
+		opacity: 0.95;
+		margin: 0;
+	}
+
+	.comparison-badge-custom {
+		background: rgba(255, 255, 255, 0.2);
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		padding: 0.75rem 1.5rem;
+		border-radius: 50px;
+		font-size: 1rem;
+		font-weight: 600;
+		transition: all 0.3s ease;
+	}
+
+	.comparison-badge-custom:hover {
+		background: rgba(255, 255, 255, 0.3);
+		transform: scale(1.05);
+	}
+
+	.empty-state {
+		background: white;
+		border-radius: 1rem;
+		padding: 4rem 2rem;
+		text-align: center;
+		box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+		animation: fadeInUp 0.6s ease-out;
+	}
+
+	.empty-state-icon {
+		font-size: 5rem;
+		color: #667eea;
+		margin-bottom: 1.5rem;
+		animation: pulse 2s infinite;
+	}
+
+	.comparison-card {
+		background: white;
+		border-radius: 1rem;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		overflow: hidden;
+		animation: fadeInUp 0.6s ease-out;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.comparison-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+	}
+
+	.comparison-table {
+		margin: 0;
+		border-collapse: separate;
+		border-spacing: 0;
+	}
+
+	.comparison-table thead th {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		font-weight: 600;
+		padding: 1.5rem;
+		border: none;
+		position: relative;
+		vertical-align: top;
+	}
+
+	.comparison-table thead th:first-child {
+		border-radius: 1rem 0 0 0;
+	}
+
+	.comparison-table thead th:last-child {
+		border-radius: 0 1rem 0 0;
+	}
+
+	.comparison-table thead th:not(:first-child) {
+		border-left: 2px solid rgba(255,255,255,0.2);
+	}
+
+	.product-header {
+		position: relative;
+		padding: 1rem;
+	}
+
+	.product-image-wrapper {
+		position: relative;
+		margin-bottom: 1rem;
+		border-radius: 0.75rem;
+		overflow: hidden;
+		background: #f8f9fa;
+		padding: 1rem;
+		transition: transform 0.3s ease;
+	}
+
+	.product-image-wrapper:hover {
+		transform: scale(1.05);
+	}
+
+	.product-image-wrapper img {
+		width: 100%;
+		height: 180px;
+		object-fit: contain;
+		border-radius: 0.5rem;
+		transition: transform 0.3s ease;
+	}
+
+	.product-image-wrapper:hover img {
+		transform: scale(1.1);
+	}
+
+	.remove-product-btn {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: rgba(220, 53, 69, 0.9);
+		border: none;
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		z-index: 10;
+		box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+	}
+
+	.remove-product-btn:hover {
+		background: #dc3545;
+		transform: scale(1.1) rotate(90deg);
+		box-shadow: 0 4px 12px rgba(220, 53, 69, 0.6);
+	}
+
+	.product-name {
+		font-size: 1rem;
+		font-weight: 700;
+		color: white;
+		margin-bottom: 1rem;
+		line-height: 1.4;
+		min-height: 2.8rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+	}
+
+	.product-detail-btn {
+		width: 100%;
+		background: rgba(255, 255, 255, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		color: white;
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		text-decoration: none;
+		display: inline-block;
+		text-align: center;
+	}
+
+	.product-detail-btn:hover {
+		background: rgba(255, 255, 255, 0.3);
+		color: white;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	}
+
+	.comparison-table tbody td {
+		padding: 1.25rem 1rem;
+		border-bottom: 1px solid #e9ecef;
+		vertical-align: middle;
+		transition: background-color 0.2s ease;
+	}
+
+	.comparison-table tbody tr:hover td {
+		background-color: #f8f9fa;
+	}
+
+	.comparison-table tbody td:first-child {
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		font-weight: 700;
+		color: #495057;
+		font-size: 0.95rem;
+		width: 200px;
+		position: sticky;
+		left: 0;
+		z-index: 5;
+		box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+	}
+
+	.comparison-table tbody td:not(:first-child) {
+		text-align: center;
+		border-left: 1px solid #e9ecef;
+	}
+
+	.price-cell {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: #0d6efd;
+		text-shadow: 0 1px 3px rgba(13, 110, 253, 0.2);
+	}
+
+	.category-badge {
+		padding: 0.5rem 1rem;
+		border-radius: 50px;
+		font-weight: 600;
+		font-size: 0.9rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: white;
+		display: inline-block;
+		box-shadow: 0 2px 8px rgba(102, 126, 69, 0.3);
+	}
+
+	.stock-badge {
+		padding: 0.5rem 1rem;
+		border-radius: 50px;
+		font-weight: 600;
+		font-size: 0.9rem;
+		display: inline-block;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	}
+
+	.description-cell {
+		max-width: 300px;
+		line-height: 1.6;
+		color: #6c757d;
+		font-size: 0.9rem;
+	}
+
+	.action-btn {
+		padding: 0.6rem 1.5rem;
+		border-radius: 50px;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		border: none;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	}
+
+	.action-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	}
+
+	.clear-btn {
+		background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+		color: white;
+		padding: 0.75rem 1.5rem;
+		border-radius: 50px;
+		border: none;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+	}
+
+	.clear-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+		background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+	}
+
+	.tip-alert {
+		background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+		border: none;
+		border-left: 4px solid #2196f3;
+		border-radius: 0.75rem;
+		padding: 1.5rem;
+		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+		animation: fadeInUp 0.6s ease-out 0.3s both;
+	}
+
+	/* Animations */
+	@@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@@keyframes pulse {
+		0%, 100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.1);
+		}
+	}
+
+	/* Responsive Design */
+	@@media (max-width: 992px) {
+		.comparison-table {
+			display: block;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.comparison-table thead th {
+			min-width: 250px;
+		}
+
+		.comparison-table tbody td {
+			min-width: 250px;
+		}
+
+		.comparison-header h1 {
+			font-size: 2rem;
+		}
+	}
+
+	@@media (max-width: 768px) {
+		.comparison-page {
+			padding: 1rem 0;
+		}
+
+		.comparison-header {
+			padding: 1.5rem;
+			margin-bottom: 1.5rem;
+		}
+
+		.comparison-header h1 {
+			font-size: 1.75rem;
+		}
+
+		.comparison-table thead th,
+		.comparison-table tbody td {
+			min-width: 220px;
+			padding: 1rem 0.75rem;
+		}
+
+		.product-image-wrapper img {
+			height: 150px;
+		}
+
+		.price-cell {
+			font-size: 1.25rem;
+		}
+
+		.empty-state {
+			padding: 3rem 1.5rem;
+		}
+
+		.empty-state-icon {
+			font-size: 4rem;
+		}
+	}
+
+	@@media (max-width: 576px) {
+		.comparison-header {
+			padding: 1rem;
+		}
+
+		.comparison-header h1 {
+			font-size: 1.5rem;
+		}
+
+		.comparison-badge-custom,
+		.clear-btn {
+			width: 100%;
+			margin-top: 0.5rem;
+		}
+
+		.comparison-table thead th,
+		.comparison-table tbody td {
+			min-width: 200px;
+			padding: 0.75rem 0.5rem;
+		}
+
+		.product-name {
+			font-size: 0.9rem;
+		}
+	}
+
+	/* Smooth scrollbar */
+	.table-responsive::-webkit-scrollbar {
+		height: 8px;
+	}
+
+	.table-responsive::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 10px;
+	}
+
+	.table-responsive::-webkit-scrollbar-thumb {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 10px;
+	}
+
+	.table-responsive::-webkit-scrollbar-thumb:hover {
+		background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+	}
+
+	/* Notification Toast */
+	.notification-toast {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		z-index: 9999;
+		min-width: 300px;
+		max-width: 400px;
+		animation: slideInRight 0.3s ease-out;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+		border-radius: 0.75rem;
+		overflow: hidden;
+	}
+
+	@@keyframes slideInRight {
+		from {
+			transform: translateX(400px);
+			opacity: 0;
+		}
+		to {
+			transform: translateX(0);
+			opacity: 1;
+		}
+	}
+
+	@@keyframes slideOutRight {
+		from {
+			transform: translateX(0);
+			opacity: 1;
+		}
+		to {
+			transform: translateX(400px);
+			opacity: 0;
+		}
+	}
+
+	.notification-toast.hide {
+		animation: slideOutRight 0.3s ease-out forwards;
+	}
+
+	@@media (max-width: 768px) {
+		.notification-toast {
+			right: 10px;
+			left: 10px;
+			min-width: auto;
+			max-width: none;
+		}
+	}
+</style>
+
+<div class="comparison-page">
+	<div class="container my-4 my-md-5">
+		<!-- Page Header -->
+		<div class="comparison-header">
+			<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+				<div>
+					<h1>
+						<i class="bi bi-arrow-left-right me-2"></i>So sánh sản phẩm
+					</h1>
+					<p>So sánh chi tiết các sản phẩm bạn đã chọn</p>
+				</div>
+				@if (Model.Any())
+				{
+					<div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
+						<span class="comparison-badge-custom">
+							<i class="bi bi-box-seam me-1"></i>@comparisonCount sản phẩm
+						</span>
+						<button id="clearComparison" class="clear-btn">
+							<i class="bi bi-trash me-1"></i>Xóa tất cả
+						</button>
+					</div>
+				}
+			</div>
+		</div>
+
+		@if (!Model.Any())
+		{
+			<div class="row">
+				<div class="col-12">
+					<div class="empty-state">
+						<i class="bi bi-arrow-left-right empty-state-icon"></i>
+						<h4 class="mt-3 mb-2 fw-bold">Chưa có sản phẩm nào để so sánh</h4>
+						<p class="text-muted mb-4">Thêm sản phẩm vào danh sách so sánh để xem chi tiết</p>
+						<a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-lg px-4 py-2" style="border-radius: 50px;">
+							<i class="bi bi-arrow-left me-2"></i>Xem sản phẩm
+						</a>
+					</div>
+				</div>
+			</div>
+		}
+		else
+		{
+			<div class="row">
+				<div class="col-12">
+					<div class="comparison-card">
+						<div class="table-responsive">
+							<table class="table mb-0 comparison-table">
+								<thead>
+									<tr>
+										<th style="width: 200px;">Tiêu chí</th>
+										@foreach (var product in Model)
+										{
+											<th class="text-center" style="min-width: 250px;">
+												<div class="product-header">
+													<button class="remove-product-btn remove-product" data-product-id="@product.Id" title="Xóa khỏi so sánh">
+														<i class="bi bi-x-lg"></i>
+													</button>
+													<div class="product-image-wrapper">
+														@if (!string.IsNullOrEmpty(product.ImageUrl))
+														{
+															<img src="@product.ImageUrl" alt="@product.Name">
+														}
+														else
+														{
+															<div class="d-flex align-items-center justify-content-center" style="height: 180px;">
+																<i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+															</div>
+														}
+													</div>
+													<div class="product-name">@product.Name</div>
+													<a asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="product-detail-btn">
+														<i class="bi bi-eye me-1"></i>Xem chi tiết
+													</a>
+												</div>
+											</th>
+										}
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Giá</td>
+										@foreach (var product in Model)
+										{
+											<td>
+												<span class="price-cell">@product.Price.ToString("N0") đ</span>
+											</td>
+										}
+									</tr>
+									<tr>
+										<td>Danh mục</td>
+										@foreach (var product in Model)
+										{
+											<td>
+												<span class="category-badge">@(product.Category?.Name ?? "N/A")</span>
+											</td>
+										}
+									</tr>
+									<tr>
+										<td>Tình trạng</td>
+										@foreach (var product in Model)
+										{
+											<td>
+												@if (product.Stock > 0)
+												{
+													<span class="stock-badge bg-success text-white">
+														<i class="bi bi-check-circle me-1"></i>Còn hàng (@product.Stock)
+													</span>
+												}
+												else
+												{
+													<span class="stock-badge bg-danger text-white">
+														<i class="bi bi-x-circle me-1"></i>Hết hàng
+													</span>
+												}
+											</td>
+										}
+									</tr>
+									<tr>
+										<td>Mô tả</td>
+										@foreach (var product in Model)
+										{
+											<td>
+												<p class="description-cell mb-0">@(product.Description ?? "Không có mô tả")</p>
+											</td>
+										}
+									</tr>
+									<tr>
+										<td>Thao tác</td>
+										@foreach (var product in Model)
+										{
+											<td>
+												@if (product.Stock > 0)
+												{
+													<form asp-area="Customer" asp-controller="ShoppingCart" asp-action="Add" method="post" class="d-inline">
+														<input type="hidden" name="productId" value="@product.Id" />
+														<input type="hidden" name="quantity" value="1" />
+														<button type="submit" class="action-btn btn-primary text-white">
+															<i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ
+														</button>
+													</form>
+												}
+												else
+												{
+													<button class="action-btn btn-secondary text-white" disabled>
+														<i class="bi bi-x-circle me-1"></i>Hết hàng
+													</button>
+												}
+											</td>
+										}
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			@if (comparisonCount < 4)
+			{
+				<div class="row mt-4">
+					<div class="col-12">
+						<div class="tip-alert d-flex align-items-center">
+							<i class="bi bi-info-circle me-3 fs-3 text-primary"></i>
+							<div class="flex-grow-1">
+								<strong class="d-block mb-1">Mẹo:</strong>
+								<span>Bạn có thể thêm tối đa 4 sản phẩm để so sánh. Hiện tại bạn đang so sánh <strong>@comparisonCount sản phẩm</strong>.</span>
+								@if (Model.Any())
+								{
+									var firstCategory = Model.First().Category?.Name ?? "loại này";
+									<div class="mt-2">
+										<small class="text-muted">
+											<i class="bi bi-exclamation-circle me-1"></i>
+											<strong>Lưu ý:</strong> Chỉ có thể so sánh các sản phẩm cùng loại. Sản phẩm hiện tại thuộc danh mục <strong>@firstCategory</strong>.
+										</small>
+									</div>
+								}
+								<a asp-controller="Product" asp-action="Index" class="d-inline-block mt-2 text-primary fw-bold text-decoration-none">
+									<i class="bi bi-plus-circle me-1"></i>Thêm sản phẩm khác
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		}
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			// Xóa sản phẩm khỏi so sánh
+			$('.remove-product').on('click', function () {
+				var productId = $(this).data('product-id');
+				var $row = $(this).closest('th');
+				
+				$.ajax({
+					url: '@Url.Action("Remove", "Comparison", new { area = "Customer" })',
+					type: 'POST',
+					data: { productId: productId },
+					success: function (response) {
+						if (response.success) {
+							// Xóa cột sản phẩm
+							var index = $row.index();
+							$('tr').each(function () {
+								$(this).find('td, th').eq(index).remove();
+							});
+							
+							// Cập nhật số lượng
+							updateComparisonCount(response.count);
+							
+							// Nếu không còn sản phẩm nào, reload trang
+							if (response.count === 0) {
+								location.reload();
+							}
+							
+							// Hiển thị thông báo
+							showNotification(response.message, 'success');
+						} else {
+							showNotification(response.message, 'error');
+						}
+					},
+					error: function () {
+						showNotification('Có lỗi xảy ra', 'error');
+					}
+				});
+			});
+
+			// Xóa tất cả
+			$('#clearComparison').on('click', function () {
+				if (confirm('Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi danh sách so sánh?')) {
+					$.ajax({
+						url: '@Url.Action("Clear", "Comparison", new { area = "Customer" })',
+						type: 'POST',
+						success: function (response) {
+							if (response.success) {
+								location.reload();
+							}
+						}
+					});
+				}
+			});
+
+			function updateComparisonCount(count) {
+				// Cập nhật badge trong header nếu có
+				$('.comparison-badge').text(count);
+				if (count === 0) {
+					$('.comparison-badge').hide();
+				} else {
+					$('.comparison-badge').show();
+				}
+			}
+
+			function showNotification(message, type) {
+				var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+				var icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+				var alert = $('<div class="alert ' + alertClass + ' alert-dismissible fade show notification-toast">' +
+					'<div class="d-flex align-items-center">' +
+					'<i class="bi ' + icon + ' me-2 fs-5"></i>' +
+					'<div class="flex-grow-1">' + message + '</div>' +
+					'<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+					'</div></div>');
+				$('body').append(alert);
+				setTimeout(function () {
+					alert.addClass('hide');
+					setTimeout(function() {
+						alert.remove();
+					}, 300);
+				}, 3000);
+			}
+		});
+	</script>
+}
+

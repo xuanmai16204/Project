@@ -1,0 +1,113 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.DiscountCode
+@{
+	ViewData["Title"] = "Chi tiết mã giảm giá";
+	var isExpired = DateTime.UtcNow > Model.EndDate;
+	var isActive = Model.IsActive && !isExpired;
+	var usagePercent = Model.UsageLimit > 0 ? (Model.UsageCount * 100.0 / Model.UsageLimit) : 0;
+}
+
+<div class="container my-4">
+	<div class="row justify-content-center">
+		<div class="col-12 col-lg-10">
+			<div class="card shadow-sm border-0">
+				<div class="card-header bg-info text-white">
+					<h4 class="mb-0 fw-bold"><i class="bi bi-eye me-2"></i>Chi tiết mã giảm giá</h4>
+				</div>
+				<div class="card-body p-4">
+					<div class="row mb-4">
+						<div class="col-md-6">
+							<dl class="row">
+								<dt class="col-sm-4">Mã giảm giá:</dt>
+								<dd class="col-sm-8">
+									<strong class="text-primary fs-4">@Model.Code</strong>
+								</dd>
+
+								<dt class="col-sm-4">Mô tả:</dt>
+								<dd class="col-sm-8">@(Model.Description ?? "Không có mô tả")</dd>
+
+								<dt class="col-sm-4">Loại giảm giá:</dt>
+								<dd class="col-sm-8">
+									@if (Model.DiscountPercent.HasValue)
+									{
+										<span class="badge bg-success fs-6">@Model.DiscountPercent.Value%</span>
+									}
+									else if (Model.DiscountAmount.HasValue)
+									{
+										<span class="badge bg-info fs-6">@Model.DiscountAmount.Value.ToString("N0") đ</span>
+									}
+								</dd>
+
+								<dt class="col-sm-4">Ngày bắt đầu:</dt>
+								<dd class="col-sm-8">@Model.StartDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+								<dt class="col-sm-4">Ngày kết thúc:</dt>
+								<dd class="col-sm-8">@Model.EndDate.ToString("dd/MM/yyyy HH:mm")</dd>
+							</dl>
+						</div>
+						<div class="col-md-6">
+							<dl class="row">
+								<dt class="col-sm-4">Trạng thái:</dt>
+								<dd class="col-sm-8">
+									@if (isExpired)
+									{
+										<span class="badge bg-secondary fs-6">Hết hạn</span>
+									}
+									else if (Model.IsActive)
+									{
+										<span class="badge bg-success fs-6">Đang hoạt động</span>
+									}
+									else
+									{
+										<span class="badge bg-danger fs-6">Vô hiệu hóa</span>
+									}
+								</dd>
+
+								<dt class="col-sm-4">Số lần sử dụng:</dt>
+								<dd class="col-sm-8">
+									@if (Model.UsageLimit > 0)
+									{
+										<div>
+											<div class="progress mb-2" style="height: 20px;">
+												<div class="progress-bar @(usagePercent >= 100 ? "bg-danger" : usagePercent >= 80 ? "bg-warning" : "bg-success")" 
+													 role="progressbar" 
+													 style="width: @(Math.Min(100, usagePercent))%">
+													@Model.UsageCount/@Model.UsageLimit
+												</div>
+											</div>
+											<small class="text-muted">@Math.Round(usagePercent, 1)% đã sử dụng</small>
+										</div>
+									}
+									else
+									{
+										<span class="text-muted">@Model.UsageCount lần (không giới hạn)</span>
+									}
+								</dd>
+
+								<dt class="col-sm-4">Giới hạn sử dụng:</dt>
+								<dd class="col-sm-8">@(Model.UsageLimit > 0 ? Model.UsageLimit.ToString() : "Không giới hạn")</dd>
+
+								<dt class="col-sm-4">Đơn hàng tối thiểu:</dt>
+								<dd class="col-sm-8">
+									@(Model.MinimumOrderAmount.HasValue ? Model.MinimumOrderAmount.Value.ToString("N0") + " đ" : "Không yêu cầu")
+								</dd>
+
+								<dt class="col-sm-4">Người tạo:</dt>
+								<dd class="col-sm-8">@(Model.CreatedBy ?? "N/A")</dd>
+							</dl>
+						</div>
+					</div>
+
+					<div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+						<a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+							<i class="bi bi-arrow-left me-2"></i>Quay lại
+						</a>
+						<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg">
+							<i class="bi bi-pencil me-2"></i>Chỉnh sửa
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+

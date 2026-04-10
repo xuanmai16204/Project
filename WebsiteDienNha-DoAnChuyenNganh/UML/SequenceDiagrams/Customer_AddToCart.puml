@@ -1,0 +1,44 @@
+@startuml Sequence Diagram - Customer Thêm sản phẩm vào giỏ hàng
+
+actor Customer
+participant "ShoppingCartController" as Controller
+participant "ProductRepository" as ProductRepo
+participant "CartService" as CartService
+participant "Session" as Session
+participant "Database" as DB
+
+Customer -> Controller: POST /Customer/ShoppingCart/Add (productId, quantity)
+Controller -> ProductRepo: GetByIdAsync(productId)
+ProductRepo -> DB: SELECT * FROM Products WHERE Id = productId
+DB -> ProductRepo: Product object
+ProductRepo -> Controller: Product
+
+alt Product tồn tại
+    Controller -> Controller: Kiểm tra Stock >= quantity
+    
+    alt Còn đủ hàng
+        Controller -> CartService: GetCart()
+        CartService -> Session: Get cart from session
+        Session -> CartService: Cart items list
+        CartService -> Controller: Cart
+        
+        Controller -> Controller: Tìm item trong cart
+        
+        alt Item chưa có trong cart
+            Controller -> CartService: Add new CartItem
+            CartService -> Session: Save cart to session
+        else Item đã có trong cart
+            Controller -> CartService: Update quantity
+            CartService -> Session: Save cart to session
+        end
+        
+        Controller -> Customer: JSON {success: true, count: cartCount}
+    else Hết hàng
+        Controller -> Customer: JSON {success: false, message: "Sản phẩm không đủ hàng"}
+    end
+else Product không tồn tại
+    Controller -> Customer: 404 Not Found
+end
+
+@enduml
+

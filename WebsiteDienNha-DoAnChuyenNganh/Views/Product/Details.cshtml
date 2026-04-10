@@ -1,0 +1,389 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.Product
+@{
+	ViewData["Title"] = "Chi tiết sản phẩm";
+}
+
+<style>
+	.product-detail-page {
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		min-height: 100vh;
+		padding: 2rem 0;
+	}
+
+	.product-image-card {
+		border-radius: 1rem;
+		overflow: hidden;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		background: white;
+	}
+
+	.product-image-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+	}
+
+	.product-image-card img {
+		transition: transform 0.5s ease;
+	}
+
+	.product-image-card:hover img {
+		transform: scale(1.05);
+	}
+
+	.product-info-card {
+		border-radius: 1rem;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		background: white;
+		animation: fadeInUp 0.6s ease-out;
+	}
+
+	.product-title {
+		font-size: 2rem;
+		font-weight: 700;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		margin-bottom: 1rem;
+	}
+
+	.product-price {
+		font-size: 2.5rem;
+		font-weight: 700;
+		background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		margin-bottom: 1rem;
+	}
+
+	.comparison-btn-detail {
+		position: relative;
+		overflow: hidden;
+		transition: all 0.3s ease;
+		border: 2px solid #0d6efd;
+		background: white;
+		color: #0d6efd;
+		font-weight: 600;
+		border-radius: 0.5rem;
+	}
+
+	.comparison-btn-detail::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 0;
+		height: 0;
+		border-radius: 50%;
+		background: rgba(13, 110, 253, 0.1);
+		transform: translate(-50%, -50%);
+		transition: width 0.6s, height 0.6s;
+	}
+
+	.comparison-btn-detail:hover::before {
+		width: 400px;
+		height: 400px;
+	}
+
+	.comparison-btn-detail:hover {
+		background: #0d6efd;
+		color: white;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 16px rgba(13, 110, 253, 0.3);
+	}
+
+	.comparison-btn-detail:active {
+		transform: translateY(0);
+	}
+
+	.comparison-btn-detail.btn-success {
+		border-color: #198754;
+		background: #198754;
+		color: white;
+		cursor: default;
+	}
+
+	.comparison-btn-detail.btn-success::before {
+		display: none;
+	}
+
+	.comparison-btn-detail.btn-success:hover {
+		transform: none;
+		box-shadow: none;
+		background: #198754;
+		color: white;
+	}
+
+	.comparison-btn-detail i {
+		position: relative;
+		z-index: 1;
+		transition: transform 0.3s ease;
+	}
+
+	.comparison-btn-detail:hover i {
+		transform: rotate(180deg);
+	}
+
+	.btn-primary-lg {
+		position: relative;
+		overflow: hidden;
+		transition: all 0.3s ease;
+		font-weight: 600;
+		border-radius: 0.5rem;
+		box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+	}
+
+	.btn-primary-lg:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(13, 110, 253, 0.3);
+	}
+
+	.btn-primary-lg:active {
+		transform: translateY(0);
+	}
+
+	@@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.notification-toast {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		z-index: 9999;
+		min-width: 300px;
+		max-width: 400px;
+		animation: slideInRight 0.3s ease-out;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+		border-radius: 0.75rem;
+		overflow: hidden;
+	}
+
+	@@keyframes slideInRight {
+		from {
+			transform: translateX(400px);
+			opacity: 0;
+		}
+		to {
+			transform: translateX(0);
+			opacity: 1;
+		}
+	}
+
+	@@keyframes slideOutRight {
+		from {
+			transform: translateX(0);
+			opacity: 1;
+		}
+		to {
+			transform: translateX(400px);
+			opacity: 0;
+		}
+	}
+
+	.notification-toast.hide {
+		animation: slideOutRight 0.3s ease-out forwards;
+	}
+
+	@@media (max-width: 768px) {
+		.product-title {
+			font-size: 1.5rem;
+		}
+
+		.product-price {
+			font-size: 2rem;
+		}
+
+		.notification-toast {
+			right: 10px;
+			left: 10px;
+			min-width: auto;
+			max-width: none;
+		}
+	}
+</style>
+
+<div class="product-detail-page">
+	<div class="container my-4">
+		<div class="row g-4">
+			<div class="col-12 col-lg-6">
+				<div class="product-image-card">
+					@if (!string.IsNullOrEmpty(Model.ImageUrl))
+					{
+						<img src="@Model.ImageUrl" class="card-img-top img-fluid" alt="@Model.Name" style="max-height: 500px; object-fit: contain;">
+					}
+					else
+					{
+						<div class="bg-light d-flex align-items-center justify-content-center" style="height: 500px;">
+							<i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+						</div>
+					}
+				</div>
+			</div>
+			<div class="col-12 col-lg-6">
+				<div class="product-info-card h-100">
+					<div class="card-body p-4">
+						<h2 class="product-title">@Model.Name</h2>
+						<div class="mb-3">
+							<span class="badge bg-primary fs-6 px-3 py-2" style="border-radius: 50px;">
+								<i class="bi bi-tag me-1"></i>@Model.Category?.Name
+							</span>
+						</div>
+						<hr>
+						<div class="mb-4">
+							@{
+								var detailPromotionPrice = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.GetPromotionPrice(Model);
+								var detailHasPromotion = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.HasActivePromotion(Model);
+								var detailDiscountPercent = WebsiteDienNha_DoAnChuyenNganh.Utils.ProductHelper.GetDiscountPercent(Model);
+							}
+							@if (detailHasPromotion && detailPromotionPrice < Model.Price)
+							{
+								<div class="mb-3">
+									<div class="d-flex align-items-center gap-3 flex-wrap">
+										<div class="product-price text-danger">@detailPromotionPrice.ToString("N0") đ</div>
+										<div class="d-flex align-items-center gap-2">
+											<span class="text-muted text-decoration-line-through fs-5">@Model.Price.ToString("N0") đ</span>
+											<span class="badge bg-danger fs-6 px-3 py-2">-@detailDiscountPercent%</span>
+										</div>
+									</div>
+								</div>
+							}
+							else
+							{
+								<div class="product-price">@Model.Price.ToString("N0") đ</div>
+							}
+							@if (Model.Stock > 0)
+							{
+								<span class="badge bg-success fs-6 px-3 py-2" style="border-radius: 50px;">
+									<i class="bi bi-check-circle me-1"></i>Còn hàng (@Model.Stock sản phẩm)
+								</span>
+							}
+							else
+							{
+								<span class="badge bg-danger fs-6 px-3 py-2" style="border-radius: 50px;">
+									<i class="bi bi-x-circle me-1"></i>Hết hàng
+								</span>
+							}
+						</div>
+						<div class="mb-4">
+							<h6 class="fw-bold mb-2">Mô tả sản phẩm:</h6>
+							<p class="text-muted">@(Model.Description ?? "Không có mô tả")</p>
+						</div>
+						<div class="d-grid gap-2 d-md-flex">
+							@if (Model.Stock > 0)
+							{
+								<form asp-area="Customer" asp-controller="ShoppingCart" asp-action="Add" method="post" class="flex-grow-1">
+									<input type="hidden" name="productId" value="@Model.Id" />
+									<input type="hidden" name="quantity" value="1" />
+									<button type="submit" class="btn btn-primary btn-lg w-100 btn-primary-lg">
+										<i class="bi bi-cart-plus me-2"></i>Thêm vào giỏ hàng
+									</button>
+								</form>
+							}
+							else
+							{
+								<button class="btn btn-secondary btn-lg w-100" disabled>
+									<i class="bi bi-x-circle me-2"></i>Hết hàng
+								</button>
+							}
+							<button class="btn comparison-btn-detail btn-lg add-to-comparison" data-product-id="@Model.Id">
+								<i class="bi bi-arrow-left-right me-2"></i>So sánh
+							</button>
+							<a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+								<i class="bi bi-arrow-left me-2"></i>Quay lại
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			// Thêm sản phẩm vào so sánh
+			$('.add-to-comparison').on('click', function () {
+				var $btn = $(this);
+				var productId = $btn.data('product-id');
+				
+				$.ajax({
+					url: '@Url.Action("Add", "Comparison", new { area = "Customer" })',
+					type: 'POST',
+					data: { productId: productId },
+					success: function (response) {
+						if (response.success) {
+							$btn.removeClass('btn-outline-primary').addClass('btn-success');
+							$btn.html('<i class="bi bi-check-lg me-2"></i>Đã thêm');
+							$btn.prop('disabled', true);
+							
+							// Cập nhật số lượng trong header
+							updateComparisonCount(response.count);
+							
+							showNotification(response.message, 'success');
+						} else {
+							showNotification(response.message, 'error');
+						}
+					},
+					error: function () {
+						showNotification('Có lỗi xảy ra', 'error');
+					}
+				});
+			});
+
+			// Load trạng thái so sánh khi trang load
+			loadComparisonStatus();
+
+			function loadComparisonStatus() {
+				$.ajax({
+					url: '@Url.Action("GetCount", "Comparison", new { area = "Customer" })',
+					type: 'GET',
+					success: function (response) {
+						updateComparisonCount(response.count);
+					}
+				});
+			}
+
+			function updateComparisonCount(count) {
+				var $badge = $('.comparison-badge');
+				if ($badge.length) {
+					$badge.text(count);
+					if (count === 0) {
+						$badge.hide();
+					} else {
+						$badge.show();
+					}
+				}
+			}
+
+			function showNotification(message, type) {
+				var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+				var icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+				var alert = $('<div class="alert ' + alertClass + ' alert-dismissible fade show notification-toast">' +
+					'<div class="d-flex align-items-center">' +
+					'<i class="bi ' + icon + ' me-2 fs-5"></i>' +
+					'<div class="flex-grow-1">' + message + '</div>' +
+					'<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+					'</div></div>');
+				$('body').append(alert);
+				setTimeout(function () {
+					alert.addClass('hide');
+					setTimeout(function() {
+						alert.remove();
+					}, 300);
+				}, 3000);
+			}
+		});
+	</script>
+}
+

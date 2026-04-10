@@ -1,0 +1,122 @@
+@model IEnumerable<WebsiteDienNha_DoAnChuyenNganh.Models.DiscountCode>
+@{
+	ViewData["Title"] = "Quản lý mã giảm giá";
+}
+
+<div class="container my-4">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="fw-bold mb-0"><i class="bi bi-ticket-perforated me-2 text-primary"></i>Quản lý mã giảm giá</h2>
+		<a asp-action="Create" class="btn btn-primary btn-lg">
+			<i class="bi bi-plus-circle me-2"></i>Tạo mới
+		</a>
+	</div>
+
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			<i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	}
+
+	<div class="card shadow-sm border-0">
+		<div class="card-body p-0">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0">
+					<thead class="table-light">
+						<tr>
+							<th>Mã</th>
+							<th>Mô tả</th>
+							<th>Giảm giá</th>
+							<th>Ngày bắt đầu</th>
+							<th>Ngày kết thúc</th>
+							<th>Sử dụng</th>
+							<th>Trạng thái</th>
+							<th class="text-center">Thao tác</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var item in Model)
+						{
+							var isExpired = DateTime.UtcNow > item.EndDate;
+							var isActive = item.IsActive && !isExpired;
+							var usagePercent = item.UsageLimit > 0 ? (item.UsageCount * 100.0 / item.UsageLimit) : 0;
+							
+							<tr class="@(isExpired ? "table-secondary" : "")">
+								<td>
+									<strong class="text-primary">@item.Code</strong>
+								</td>
+								<td>
+									<span class="text-muted">@(item.Description ?? "Không có mô tả")</span>
+								</td>
+								<td>
+									@if (item.DiscountPercent.HasValue)
+									{
+										<span class="badge bg-success">@item.DiscountPercent.Value%</span>
+									}
+									else if (item.DiscountAmount.HasValue)
+									{
+										<span class="badge bg-info">@item.DiscountAmount.Value.ToString("N0") đ</span>
+									}
+								</td>
+								<td>@item.StartDate.ToString("dd/MM/yyyy")</td>
+								<td>@item.EndDate.ToString("dd/MM/yyyy")</td>
+								<td>
+									@if (item.UsageLimit > 0)
+									{
+										<div class="d-flex align-items-center gap-2">
+											<div class="progress" style="width: 100px; height: 8px;">
+												<div class="progress-bar @(usagePercent >= 100 ? "bg-danger" : usagePercent >= 80 ? "bg-warning" : "bg-success")" 
+													 role="progressbar" 
+													 style="width: @(Math.Min(100, usagePercent))%"></div>
+											</div>
+											<small class="text-muted">@item.UsageCount/@item.UsageLimit</small>
+										</div>
+									}
+									else
+									{
+										<span class="text-muted">@item.UsageCount lần</span>
+									}
+								</td>
+								<td>
+									@if (isExpired)
+									{
+										<span class="badge bg-secondary">Hết hạn</span>
+									}
+									else if (item.IsActive)
+									{
+										<span class="badge bg-success">Đang hoạt động</span>
+									}
+									else
+									{
+										<span class="badge bg-danger">Vô hiệu hóa</span>
+									}
+								</td>
+								<td class="text-center">
+									<div class="btn-group" role="group">
+										<a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Chi tiết">
+											<i class="bi bi-eye"></i>
+										</a>
+										<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Sửa">
+											<i class="bi bi-pencil"></i>
+										</a>
+										<form asp-action="ToggleActive" asp-route-id="@item.Id" method="post" class="d-inline">
+											@Html.AntiForgeryToken()
+											<button type="submit" class="btn btn-sm @(item.IsActive ? "btn-secondary" : "btn-success")" title="@(item.IsActive ? "Vô hiệu hóa" : "Kích hoạt")">
+												<i class="bi bi-@(item.IsActive ? "x-circle" : "check-circle")"></i>
+											</button>
+										</form>
+										<a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Xóa">
+											<i class="bi bi-trash"></i>
+										</a>
+									</div>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+

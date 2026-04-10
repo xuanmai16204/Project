@@ -1,0 +1,79 @@
+@startuml Sequence Diagram - Admin Quản lý sản phẩm
+
+actor Admin
+participant "ProductController" as Controller
+participant "ProductRepository" as ProductRepo
+participant "CategoryRepository" as CategoryRepo
+participant "Database" as DB
+
+== Xem danh sách sản phẩm ==
+Admin -> Controller: GET /Admin/Product/Index
+Controller -> ProductRepo: GetAllAsync()
+ProductRepo -> DB: SELECT * FROM Products
+DB -> ProductRepo: List<Product>
+ProductRepo -> Controller: Products
+Controller -> Admin: Hiển thị danh sách sản phẩm
+
+== Thêm sản phẩm ==
+Admin -> Controller: GET /Admin/Product/Create
+Controller -> CategoryRepo: GetAllAsync()
+CategoryRepo -> DB: SELECT * FROM Categories
+DB -> CategoryRepo: Categories
+CategoryRepo -> Controller: Categories
+Controller -> Admin: Hiển thị form thêm sản phẩm
+
+Admin -> Controller: POST /Admin/Product/Create (Product model)
+Controller -> Controller: Validate ModelState
+
+alt Model hợp lệ
+    Controller -> ProductRepo: AddAsync(product)
+    ProductRepo -> DB: INSERT INTO Products
+    DB -> ProductRepo: Product created
+    ProductRepo -> Controller: Success
+    Controller -> Admin: Redirect to Index
+else Model không hợp lệ
+    Controller -> CategoryRepo: GetAllAsync()
+    CategoryRepo -> Controller: Categories
+    Controller -> Admin: Hiển thị form với lỗi
+end
+
+== Sửa sản phẩm ==
+Admin -> Controller: GET /Admin/Product/Edit?id=X
+Controller -> ProductRepo: GetByIdAsync(id)
+ProductRepo -> DB: SELECT * FROM Products WHERE Id = id
+DB -> ProductRepo: Product
+ProductRepo -> Controller: Product
+Controller -> CategoryRepo: GetAllAsync()
+CategoryRepo -> Controller: Categories
+Controller -> Admin: Hiển thị form sửa với dữ liệu
+
+Admin -> Controller: POST /Admin/Product/Edit (Product model)
+Controller -> Controller: Validate ModelState
+
+alt Model hợp lệ
+    Controller -> ProductRepo: UpdateAsync(product)
+    ProductRepo -> DB: UPDATE Products SET ...
+    DB -> ProductRepo: Updated
+    ProductRepo -> Controller: Success
+    Controller -> Admin: Redirect to Index
+else Model không hợp lệ
+    Controller -> Admin: Hiển thị form với lỗi
+end
+
+== Xóa sản phẩm ==
+Admin -> Controller: GET /Admin/Product/Delete?id=X
+Controller -> ProductRepo: GetByIdAsync(id)
+ProductRepo -> DB: SELECT Product
+DB -> ProductRepo: Product
+ProductRepo -> Controller: Product
+Controller -> Admin: Hiển thị xác nhận xóa
+
+Admin -> Controller: POST /Admin/Product/DeleteConfirmed?id=X
+Controller -> ProductRepo: DeleteAsync(id)
+ProductRepo -> DB: DELETE FROM Products WHERE Id = id
+DB -> ProductRepo: Deleted
+ProductRepo -> Controller: Success
+Controller -> Admin: Redirect to Index
+
+@enduml
+

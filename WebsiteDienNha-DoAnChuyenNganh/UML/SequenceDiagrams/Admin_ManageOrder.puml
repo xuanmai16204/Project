@@ -1,0 +1,50 @@
+@startuml Sequence Diagram - Admin Quản lý đơn hàng
+
+actor Admin
+participant "OrderController" as Controller
+participant "ApplicationDbContext" as DbContext
+participant "Database" as DB
+
+== Xem danh sách đơn hàng ==
+Admin -> Controller: GET /Admin/Order/Index?status=...
+Controller -> DbContext: Query Orders với Include(User, Items)
+
+alt Có filter status
+    DbContext -> DB: SELECT * FROM Orders WHERE Status = status
+else Không có filter
+    DbContext -> DB: SELECT * FROM Orders
+end
+
+DB -> DbContext: Orders
+DbContext -> Controller: Orders
+Controller -> Controller: Tính toán thống kê (TotalOrders, PendingOrders, ...)
+Controller -> Admin: Hiển thị danh sách đơn hàng
+
+== Xem chi tiết đơn hàng ==
+Admin -> Controller: GET /Admin/Order/Details?id=X
+Controller -> DbContext: Orders.Include(User).Include(Items).ThenInclude(Product)
+DbContext -> DB: SELECT Order với User và OrderItems với Products
+DB -> DbContext: Order với đầy đủ thông tin
+DbContext -> Controller: Order
+Controller -> Admin: Hiển thị chi tiết đơn hàng
+
+== Cập nhật trạng thái đơn hàng ==
+Admin -> Controller: POST /Admin/Order/UpdateStatus (id, status)
+Controller -> DbContext: FindAsync(id)
+DbContext -> DB: SELECT * FROM Orders WHERE Id = id
+DB -> DbContext: Order
+DbContext -> Controller: Order
+
+alt Order tồn tại
+    Controller -> Controller: Update Order.Status = status
+    Controller -> DbContext: SaveChangesAsync()
+    DbContext -> DB: UPDATE Orders SET Status = status WHERE Id = id
+    DB -> DbContext: Updated
+    DbContext -> Controller: Success
+    Controller -> Admin: Redirect to Index với thông báo thành công
+else Order không tồn tại
+    Controller -> Admin: 404 Not Found
+end
+
+@enduml
+

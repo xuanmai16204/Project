@@ -1,0 +1,58 @@
+@startuml Sequence Diagram - Customer Thanh toán đơn hàng
+
+actor Customer
+participant "ShoppingCartController" as Controller
+participant "CartService" as CartService
+participant "OrderRepository" as OrderRepo
+participant "ProductRepository" as ProductRepo
+participant "UserManager" as UserManager
+participant "VietQRService" as VietQR
+participant "Database" as DB
+
+Customer -> Controller: POST /Customer/ShoppingCart/Checkout (CheckoutViewModel)
+Controller -> CartService: GetCart()
+CartService -> Controller: Cart items
+Controller -> ProductRepo: GetByIdAsync() cho từng item
+ProductRepo -> DB: SELECT Products
+DB -> ProductRepo: Products
+ProductRepo -> Controller: Products
+
+Controller -> Controller: Kiểm tra stock cho từng sản phẩm
+
+alt Tất cả sản phẩm còn đủ hàng
+    Controller -> UserManager: GetUserAsync(User)
+    UserManager -> Controller: Current user
+    
+    Controller -> Controller: Tính toán discount (nếu có)
+    Controller -> Controller: Tạo Order object
+    
+    loop Cho mỗi cart item
+        Controller -> OrderRepo: Add OrderItem
+        Controller -> ProductRepo: Update Stock (giảm số lượng)
+    end
+    
+    Controller -> OrderRepo: AddAsync(order)
+    OrderRepo -> DB: INSERT Order, OrderItems
+    DB -> OrderRepo: Order created
+    OrderRepo -> Controller: Order
+    
+    Controller -> CartService: Clear()
+    CartService -> Session: Clear cart
+    
+    alt PaymentMethod = VietQR
+        Controller -> VietQR: GenerateQRCodeUrl(amount, addInfo)
+        VietQR -> VietQR: Tạo URL từ VietQR.io API
+        VietQR -> Controller: QR Code URL
+        Controller -> Customer: Redirect to /Customer/Payment/Confirm?orderId=X
+    else PaymentMethod = COD
+        Controller -> DB: UPDATE Order Status = "Confirmed"
+        Controller -> Customer: Redirect to OrderCompleted
+    else PaymentMethod = BankTransfer
+        Controller -> Customer: Redirect to BankTransferInstructions
+    end
+else Một số sản phẩm hết hàng
+    Controller -> Customer: Error: "Một số sản phẩm không còn đủ hàng"
+end
+
+@enduml
+

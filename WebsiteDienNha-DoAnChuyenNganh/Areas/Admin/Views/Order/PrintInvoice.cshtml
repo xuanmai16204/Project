@@ -1,0 +1,487 @@
+@model WebsiteDienNha_DoAnChuyenNganh.Models.Order
+@{
+	ViewData["Title"] = "Hóa đơn #" + Model.Id;
+	Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Hoa don @Model.Id</title>
+	<script>
+		// Ẩn header/footer của browser khi in
+		window.onbeforeprint = function() {
+			document.title = "Hoa don @Model.Id";
+		};
+		window.onafterprint = function() {
+			document.title = "Hóa đơn #@Model.Id - Điện Nhà";
+		};
+	</script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+	<style>
+		@@page {
+			size: A4;
+			margin: 10mm;
+		}
+
+		@@media print {
+			@@page {
+				margin: 10mm;
+				size: A4 portrait;
+			}
+
+			* {
+				-webkit-print-color-adjust: exact !important;
+				print-color-adjust: exact !important;
+			}
+
+			body {
+				background: white !important;
+				margin: 0;
+				padding: 0;
+				font-size: 12px;
+			}
+
+			.no-print {
+				display: none !important;
+			}
+
+			.invoice-container {
+				box-shadow: none !important;
+				border: none !important;
+				margin: 0 !important;
+				padding: 0 !important;
+				max-width: 100% !important;
+				page-break-inside: avoid;
+			}
+
+			/* Ẩn các phần tử không cần thiết */
+			html, body {
+				width: 100%;
+				height: 100%;
+				overflow: visible;
+			}
+
+			/* Tối ưu spacing để vừa 1 trang */
+			.invoice-header {
+				padding-bottom: 0.75rem !important;
+				margin-bottom: 0.75rem !important;
+			}
+
+			.company-info {
+				padding: 0.75rem !important;
+				margin-bottom: 0.75rem !important;
+			}
+
+			.invoice-title {
+				font-size: 1.75rem !important;
+				margin-bottom: 0.25rem !important;
+			}
+
+			.invoice-number {
+				font-size: 1rem !important;
+				margin-top: 0.25rem !important;
+			}
+
+			.info-section {
+				padding: 0.5rem 0.75rem !important;
+				margin-bottom: 0.5rem !important;
+			}
+
+			.info-label {
+				font-size: 0.7rem !important;
+				margin-bottom: 0.25rem !important;
+			}
+
+			.info-value {
+				font-size: 0.85rem !important;
+			}
+
+			.table-invoice {
+				margin-top: 0.75rem !important;
+				font-size: 0.8rem !important;
+			}
+
+			.table-invoice thead th {
+				padding: 0.5rem !important;
+				font-size: 0.75rem !important;
+			}
+
+			.table-invoice tbody td {
+				padding: 0.5rem !important;
+				font-size: 0.8rem !important;
+			}
+
+			.total-section {
+				padding: 0.75rem !important;
+				margin-top: 0.75rem !important;
+			}
+
+			.total-label {
+				font-size: 1rem !important;
+			}
+
+			.total-amount {
+				font-size: 1.5rem !important;
+			}
+
+			.footer-note {
+				margin-top: 0.75rem !important;
+				padding-top: 0.75rem !important;
+				font-size: 0.7rem !important;
+			}
+
+			.row {
+				margin-bottom: 0.5rem !important;
+			}
+		}
+
+		body {
+			background: #f5f5f5;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+		.invoice-container {
+			max-width: 800px;
+			margin: 2rem auto;
+			background: white;
+			padding: 3rem;
+			box-shadow: 0 0 20px rgba(0,0,0,0.1);
+			border-radius: 1rem;
+		}
+
+		.invoice-header {
+			border-bottom: 3px solid #0d6efd;
+			padding-bottom: 1rem;
+			margin-bottom: 1rem;
+		}
+
+		.company-info {
+			background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+			color: white;
+			padding: 1rem;
+			border-radius: 0.5rem;
+			margin-bottom: 1rem;
+		}
+
+		.company-info h2 {
+			font-size: 1.5rem;
+			margin-bottom: 0.25rem;
+		}
+
+		.company-info p {
+			font-size: 0.875rem;
+			margin: 0;
+		}
+
+		.invoice-title {
+			font-size: 2rem;
+			font-weight: 700;
+			color: #0d6efd;
+			margin: 0;
+		}
+
+		.invoice-number {
+			font-size: 1rem;
+			color: #6c757d;
+			margin-top: 0.25rem;
+		}
+
+		.info-section {
+			background: #f8f9fa;
+			padding: 0.75rem;
+			border-radius: 0.5rem;
+			margin-bottom: 0.75rem;
+		}
+
+		.info-label {
+			font-size: 0.75rem;
+			color: #6c757d;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			margin-bottom: 0.25rem;
+		}
+
+		.info-value {
+			font-size: 0.9rem;
+			color: #212529;
+			font-weight: 500;
+		}
+
+		.table-invoice {
+			margin-top: 1rem;
+			font-size: 0.875rem;
+		}
+
+		.table-invoice thead {
+			background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+			color: white;
+		}
+
+		.table-invoice thead th {
+			border: none;
+			padding: 0.75rem;
+			font-weight: 600;
+			font-size: 0.8rem;
+		}
+
+		.table-invoice tbody td {
+			padding: 0.75rem;
+			vertical-align: middle;
+			border-bottom: 1px solid #e9ecef;
+		}
+
+		.table-invoice tbody tr:last-child td {
+			border-bottom: none;
+		}
+
+		.total-section {
+			background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+			padding: 1rem;
+			border-radius: 0.5rem;
+			margin-top: 1rem;
+			border: 2px solid #0d6efd;
+		}
+
+		.total-label {
+			font-size: 1.1rem;
+			font-weight: 600;
+			color: #212529;
+		}
+
+		.total-amount {
+			font-size: 1.75rem;
+			font-weight: 700;
+			color: #0d6efd;
+		}
+
+		.footer-note {
+			margin-top: 1.5rem;
+			padding-top: 1rem;
+			border-top: 2px dashed #dee2e6;
+			text-align: center;
+			color: #6c757d;
+			font-size: 0.75rem;
+		}
+
+		.print-button {
+			position: fixed;
+			bottom: 2rem;
+			right: 2rem;
+			z-index: 1000;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+		}
+	</style>
+</head>
+<body>
+	<div class="invoice-container">
+		<!-- Header -->
+		<div class="invoice-header">
+			<div class="company-info">
+				<h2 class="mb-2">
+					<i class="bi bi-lightning-charge-fill me-2"></i>ĐIỆN NHÀ
+				</h2>
+				<p class="mb-0 opacity-75">Thiết bị điện chính hãng</p>
+			</div>
+			<div class="text-center">
+				<h1 class="invoice-title">HÓA ĐƠN BÁN HÀNG</h1>
+				<p class="invoice-number">Số: #@Model.Id</p>
+			</div>
+		</div>
+
+		<!-- Order Info -->
+		<div class="row g-3 mb-4">
+			<div class="col-md-6">
+				<div class="info-section">
+					<div class="info-label">
+						<i class="bi bi-calendar3 me-2"></i>Ngày đặt hàng
+					</div>
+					<div class="info-value">
+						@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="info-section">
+					<div class="info-label">
+						<i class="bi bi-person-circle me-2"></i>Khách hàng
+					</div>
+					<div class="info-value">
+						@(Model.User?.Email ?? "N/A")
+						@if (!string.IsNullOrEmpty(Model.User?.UserName))
+						{
+							<br><small class="text-muted">@Model.User.UserName</small>
+						}
+					</div>
+				</div>
+			</div>
+			<div class="col-12">
+				<div class="info-section">
+					<div class="info-label">
+						<i class="bi bi-geo-alt-fill me-2"></i>Địa chỉ giao hàng
+					</div>
+					<div class="info-value">
+						@Model.ShippingAddress
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="info-section">
+					<div class="info-label">
+						<i class="bi bi-credit-card-2-front me-2"></i>Phương thức thanh toán
+					</div>
+					<div class="info-value">
+						@switch (Model.PaymentMethod)
+						{
+							case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.VietQR:
+								<span class="badge bg-primary">VietQR</span>
+								break;
+							case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.COD:
+								<span class="badge bg-success">Thanh toán khi nhận hàng (COD)</span>
+								break;
+							case WebsiteDienNha_DoAnChuyenNganh.Models.PaymentMethod.BankTransfer:
+								<span class="badge bg-info">Chuyển khoản ngân hàng</span>
+								break;
+						}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="info-section">
+					<div class="info-label">
+						<i class="bi bi-info-circle me-2"></i>Trạng thái đơn hàng
+					</div>
+					<div class="info-value">
+						@{
+							var statusText = Model.Status == "Paid" ? "Đã thanh toán" 
+								: Model.Status == "Confirmed" ? "Đã xác nhận" 
+								: Model.Status == "Shipping" ? "Đang giao hàng"
+								: Model.Status == "Delivered" ? "Đã giao hàng"
+								: Model.Status == "Failed" ? "Thất bại" 
+								: Model.Status == "Cancelled" ? "Đã hủy" 
+								: "Đang xử lý";
+						}
+						<span class="badge bg-@(Model.Status == "Paid" || Model.Status == "Confirmed" || Model.Status == "Delivered" ? "success" : Model.Status == "Failed" || Model.Status == "Cancelled" ? "danger" : "warning")">
+							@statusText
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Order Items -->
+		<table class="table table-invoice">
+			<thead>
+				<tr>
+					<th style="width: 5%;">STT</th>
+					<th style="width: 45%;">Tên sản phẩm</th>
+					<th class="text-center" style="width: 15%;">Số lượng</th>
+					<th class="text-end" style="width: 17.5%;">Đơn giá</th>
+					<th class="text-end" style="width: 17.5%;">Thành tiền</th>
+				</tr>
+			</thead>
+			<tbody>
+				@{
+					int stt = 1;
+				}
+				@foreach (var item in Model.Items)
+				{
+					<tr>
+						<td>@stt</td>
+						<td>
+							<strong>@item.Product?.Name</strong>
+						</td>
+						<td class="text-center">
+							<span class="badge bg-secondary">@item.Quantity</span>
+						</td>
+						<td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+						<td class="text-end">
+							<strong>@((item.UnitPrice * item.Quantity).ToString("N0")) đ</strong>
+						</td>
+					</tr>
+					stt++;
+				}
+			</tbody>
+		</table>
+
+		<!-- Total -->
+		<div class="total-section">
+			<div class="d-flex justify-content-between align-items-center">
+				<span class="total-label">TỔNG CỘNG:</span>
+				<span class="total-amount">@Model.Total.ToString("N0") đ</span>
+			</div>
+		</div>
+
+		<!-- Footer -->
+		<div class="footer-note">
+			<p class="mb-2">
+				<strong>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</strong>
+			</p>
+			<p class="mb-0">
+				Hóa đơn này được tạo tự động bởi hệ thống Điện Nhà<br>
+				Ngày in: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+			</p>
+		</div>
+	</div>
+
+	<!-- Print Instructions -->
+	<div class="alert alert-info no-print" style="position: fixed; top: 2rem; right: 2rem; max-width: 300px; z-index: 1001; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+		<h6 class="alert-heading fw-bold mb-2">
+			<i class="bi bi-info-circle me-2"></i>Hướng dẫn in
+		</h6>
+		<p class="mb-2 small">Để ẩn ngày giờ, URL và số trang:</p>
+		<ol class="mb-0 small" style="padding-left: 1.25rem;">
+			<li>Click nút "In hóa đơn" bên dưới</li>
+			<li>Trong hộp thoại in, tìm <strong>"More settings"</strong></li>
+			<li>Bỏ chọn <strong>"Headers and footers"</strong></li>
+			<li>Click "Save" hoặc "Print"</li>
+		</ol>
+	</div>
+
+	<!-- Print Button -->
+	<button onclick="printInvoice()" class="btn btn-primary btn-lg rounded-pill print-button no-print">
+		<i class="bi bi-printer me-2"></i>In hóa đơn
+	</button>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+		function printInvoice() {
+			// Đổi title ngắn gọn để không hiển thị dài trong header
+			var originalTitle = document.title;
+			document.title = "Hoa don @Model.Id";
+
+			// Hiển thị thông báo nhắc nhở
+			var reminder = confirm('LƯU Ý: Để ẩn ngày giờ, URL và số trang:\n\n' +
+				'1. Trong hộp thoại in sắp mở\n' +
+				'2. Click "More settings"\n' +
+				'3. BỎ CHỌN "Headers and footers"\n' +
+				'4. Sau đó click "Save" hoặc "Print"\n\n' +
+				'Click OK để tiếp tục in...');
+			
+			if (reminder) {
+				// Tự động in
+				window.print();
+			}
+
+			// Khôi phục title sau khi in
+			setTimeout(function() {
+				document.title = originalTitle;
+			}, 1000);
+		}
+
+		// Tự động ẩn header/footer khi print dialog mở
+		window.onbeforeprint = function() {
+			document.title = "Hoa don @Model.Id";
+		};
+
+		window.onafterprint = function() {
+			document.title = "Hóa đơn #@Model.Id - Điện Nhà";
+		};
+	</script>
+</body>
+</html>
+
